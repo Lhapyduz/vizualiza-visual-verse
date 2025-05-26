@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { ExternalLink, Calendar, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ProjectModal from './ProjectModal';
 
 interface Project {
   id: string;
@@ -16,8 +16,20 @@ interface Project {
 const Portfolio = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const categories = ['Todos', 'Identidade Visual', 'Design Gráfico', 'Fotografia', 'Web Design'];
+
+  const openProjectModal = (project: Project) => {
+    setSelectedProject(project);
+    setIsModalOpen(true);
+  };
+
+  const closeProjectModal = () => {
+    setIsModalOpen(false);
+    setSelectedProject(null);
+  };
 
   useEffect(() => {
     // Projetos de exemplo
@@ -110,8 +122,9 @@ const Portfolio = () => {
           {filteredProjects.map((project, index) => (
             <div 
               key={project.id}
-              className="group bg-white/5 rounded-lg overflow-hidden backdrop-blur-sm hover:bg-white/10 transition-all duration-300 hover:scale-105"
+              className="group bg-white/5 rounded-lg overflow-hidden backdrop-blur-sm hover:bg-white/10 transition-all duration-300 hover:scale-105 cursor-pointer"
               style={{ animationDelay: `${index * 0.1}s` }}
+              onClick={() => openProjectModal(project)}
             >
               <div className="relative overflow-hidden">
                 <img 
@@ -165,6 +178,15 @@ const Portfolio = () => {
           </div>
         )}
       </div>
+
+      {/* Project Modal */}
+      {selectedProject && (
+        <ProjectModal
+          project={selectedProject}
+          isOpen={isModalOpen}
+          onClose={closeProjectModal}
+        />
+      )}
     </section>
   );
 };

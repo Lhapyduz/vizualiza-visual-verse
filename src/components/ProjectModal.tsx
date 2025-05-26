@@ -1,7 +1,8 @@
 
 import { useState } from 'react';
-import { X, Calendar, Tag, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Calendar, Tag, ExternalLink, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ImageZoom from './ImageZoom';
 
 interface Project {
   id: string;
@@ -17,9 +18,11 @@ interface ProjectModalProps {
   project: Project;
   isOpen: boolean;
   onClose: () => void;
+  isAdmin?: boolean;
+  onEdit?: (project: Project) => void;
 }
 
-const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
+const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: ProjectModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // Para demonstração, vou usar algumas imagens relacionadas ao projeto
@@ -35,6 +38,13 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
 
   const prevImage = () => {
     setCurrentImageIndex((prev) => (prev - 1 + projectImages.length) % projectImages.length);
+  };
+
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(project);
+      onClose();
+    }
   };
 
   if (!isOpen) return null;
@@ -56,14 +66,26 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
               </div>
             </div>
           </div>
-          <Button
-            onClick={onClose}
-            variant="outline"
-            size="icon"
-            className="border-white/20 hover:bg-white/10"
-          >
-            <X className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button
+                onClick={handleEdit}
+                variant="outline"
+                size="icon"
+                className="border-vizualiza-orange text-vizualiza-orange hover:bg-vizualiza-orange hover:text-white"
+              >
+                <Edit className="w-5 h-5" />
+              </Button>
+            )}
+            <Button
+              onClick={onClose}
+              variant="outline"
+              size="icon"
+              className="border-white/20 hover:bg-white/10"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
 
         {/* Content */}
@@ -71,10 +93,10 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
           {/* Image Gallery */}
           <div className="space-y-4">
             <div className="relative group">
-              <img
+              <ImageZoom
                 src={projectImages[currentImageIndex]}
                 alt={`${project.title} - ${currentImageIndex + 1}`}
-                className="w-full h-80 object-cover rounded-lg"
+                className="w-full h-80 rounded-lg overflow-hidden"
               />
               
               {projectImages.length > 1 && (
@@ -106,16 +128,16 @@ const ProjectModal = ({ project, isOpen, onClose }: ProjectModalProps) => {
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`flex-shrink-0 w-16 h-16 rounded border-2 transition-all ${
+                    className={`flex-shrink-0 w-16 h-16 rounded border-2 transition-all overflow-hidden ${
                       currentImageIndex === index
                         ? 'border-vizualiza-purple'
                         : 'border-white/20 hover:border-white/40'
                     }`}
                   >
-                    <img
+                    <ImageZoom
                       src={img}
                       alt={`Thumbnail ${index + 1}`}
-                      className="w-full h-full object-cover rounded"
+                      className="w-full h-full"
                     />
                   </button>
                 ))}

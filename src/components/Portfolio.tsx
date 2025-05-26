@@ -13,7 +13,12 @@ interface Project {
   tags: string[];
 }
 
-const Portfolio = () => {
+interface PortfolioProps {
+  isAdmin?: boolean;
+  onEditProject?: (project: Project) => void;
+}
+
+const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -185,6 +190,8 @@ const Portfolio = () => {
           project={selectedProject}
           isOpen={isModalOpen}
           onClose={closeProjectModal}
+          isAdmin={isAdmin}
+          onEdit={onEditProject}
         />
       )}
     </section>

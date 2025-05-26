@@ -1,13 +1,15 @@
 
 import { useState } from 'react';
-import { Menu, X, Settings } from 'lucide-react';
+import { Menu, X, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface NavbarProps {
   onAdminClick: () => void;
+  isAdminLoggedIn?: boolean;
+  onLogout?: () => void;
 }
 
-const Navbar = ({ onAdminClick }: NavbarProps) => {
+const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
@@ -47,15 +49,27 @@ const Navbar = ({ onAdminClick }: NavbarProps) => {
                   {item.name}
                 </button>
               ))}
-              <Button
-                onClick={onAdminClick}
-                variant="outline"
-                size="sm"
-                className="ml-4 border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Admin
-              </Button>
+              <div className="flex items-center space-x-2 ml-4">
+                <Button
+                  onClick={onAdminClick}
+                  variant="outline"
+                  size="sm"
+                  className="border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  {isAdminLoggedIn ? 'Painel' : 'Admin'}
+                </Button>
+                {isAdminLoggedIn && onLogout && (
+                  <Button
+                    onClick={onLogout}
+                    variant="outline"
+                    size="sm"
+                    className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -86,15 +100,28 @@ const Navbar = ({ onAdminClick }: NavbarProps) => {
                 {item.name}
               </button>
             ))}
-            <Button
-              onClick={onAdminClick}
-              variant="outline"
-              size="sm"
-              className="ml-3 mt-2 border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white"
-            >
-              <Settings className="w-4 h-4 mr-2" />
-              Admin
-            </Button>
+            <div className="flex flex-col space-y-2 px-3 pt-2">
+              <Button
+                onClick={onAdminClick}
+                variant="outline"
+                size="sm"
+                className="border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white justify-start"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                {isAdminLoggedIn ? 'Painel' : 'Admin'}
+              </Button>
+              {isAdminLoggedIn && onLogout && (
+                <Button
+                  onClick={onLogout}
+                  variant="outline"
+                  size="sm"
+                  className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white justify-start"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sair
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       )}

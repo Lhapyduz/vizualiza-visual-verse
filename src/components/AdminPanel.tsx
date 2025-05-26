@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { X, Plus, Edit, Trash2, Save, Upload } from 'lucide-react';
+import { X, Plus, Edit, Trash2, Save, Upload, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,6 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 
 interface AdminPanelProps {
   onClose: () => void;
+  editingProject?: Project | null;
+  onClearEditingProject?: () => void;
 }
 
 interface Project {
@@ -21,10 +22,11 @@ interface Project {
   tags: string[];
 }
 
-const AdminPanel = ({ onClose }: AdminPanelProps) => {
+const AdminPanel = ({ onClose, editingProject, onClearEditingProject }: AdminPanelProps) => {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingProjectState, setEditingProjectState] = useState<Project | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [projectImages, setProjectImages] = useState<string[]>([]);
   const { toast } = useToast();
 
   const categories = ['Identidade Visual', 'Design Gráfico', 'Fotografia', 'Web Design'];
@@ -42,7 +44,26 @@ const AdminPanel = ({ onClose }: AdminPanelProps) => {
 
   useEffect(() => {
     loadProjects();
-  }, []);
+    
+    // Se há um projeto sendo editado, configurar o formulário
+    if (editingProject) {
+      setEditingProjectState(editingProject);
+      setFormData({
+        title: editingProject.title,
+        description: editingProject.description,
+        image: editingProject.image,
+        category: editingProject.category,
+        date: editingProject.date,
+        tags: editingProject.tags
+      });
+      setProjectImages([editingProject.image]);
+      setIsCreating(true);
+      
+      if (onClearEditingProject) {
+        onClearEditingProject();
+      }
+    }
+  }, [editingProject, onClearEditingProject]);
 
   const loadProjects = () => {
     const savedProjects = localStorage.getItem('vizualiza-projects');
@@ -59,11 +80,11 @@ const AdminPanel = ({ onClose }: AdminPanelProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingProject) {
+    if (editingProjectState) {
       // Editar projeto existente
       const updatedProjects = projects.map(p => 
-        p.id === editingProject.id 
-          ? { ...formData, id: editingProject.id }
+        p.id === editingProjectState.id 
+          ? { ...formData, id: editingProjectState.id }
           : p
       );
       saveProjects(updatedProjects);
@@ -98,7 +119,7 @@ const AdminPanel = ({ onClose }: AdminPanelProps) => {
   };
 
   const handleEdit = (project: Project) => {
-    setEditingProject(project);
+    setEditingProjectState(project);
     setFormData({
       title: project.title,
       description: project.description,
@@ -107,12 +128,14 @@ const AdminPanel = ({ onClose }: AdminPanelProps) => {
       date: project.date,
       tags: project.tags
     });
+    setProjectImages([project.image]);
     setIsCreating(true);
   };
 
   const resetForm = () => {
     setFormData(initialProject);
-    setEditingProject(null);
+    setEditingProjectState(null);
+    setProjectImages([]);
     setIsCreating(false);
   };
 
@@ -120,6 +143,26 @@ const AdminPanel = ({ onClose }: AdminPanelProps) => {
     const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag);
     setFormData(prev => ({ ...prev, tags }));
   };
+
+  const addImageUrl = () => {
+    const newImageUrl = prompt('Digite a URL da nova imagem:');
+    if (newImageUrl && newImageUrl.trim()) {
+      setProjectImages(prev => [...prev, newImageUrl.trim()]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setProjectImages(prev => prev.filter((_, i) => i !== index));
+    if (index === 0 && projectImages.length > 1) {
+      setFormData(prev => ({ ...prev, image: projectImages[1] }));
+    }
+  };
+
+  useEffect(() => {
+    if (projectImages.length > 0) {
+      setFormData(prev => ({ ...prev, image: projectImages[0] }));
+    }
+  }, [projectImages]);
 
   return (
     <div className="min-h-screen bg-vizualiza-bg-dark text-white p-6">
@@ -146,7 +189,7 @@ const AdminPanel = ({ onClose }: AdminPanelProps) => {
           <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold">
-                {editingProject ? 'Editar Projeto' : 'Novo Projeto'}
+                {editingProjectState ? 'Editar Projeto' : 'Novo Projeto'}
               </h2>
               {!isCreating && (
                 <Button 
@@ -177,13 +220,60 @@ const AdminPanel = ({ onClose }: AdminPanelProps) => {
                   className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                 />
 
-                <Input
-                  placeholder="URL da imagem"
-                  value={formData.image}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-                  required
-                  className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                />
+                {/* Gerenciamento de Imagens */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium text-gray-300">Imagens do Projeto</label>
+                    <Button
+                      type="button"
+                      onClick={addImageUrl}
+                      variant="outline"
+                      size="sm"
+                      className="border-vizualiza-orange text-vizualiza-orange hover:bg-vizualiza-orange hover:text-white"
+                    >
+                      <Image className="w-4 h-4 mr-1" />
+                      Adicionar
+                    </Button>
+                  </div>
+                  
+                  {projectImages.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {projectImages.map((img, index) => (
+                        <div key={index} className="relative group">
+                          <img 
+                            src={img} 
+                            alt={`Imagem ${index + 1}`}
+                            className="w-full h-20 object-cover rounded border"
+                          />
+                          <Button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            variant="destructive"
+                            size="sm"
+                            className="absolute top-1 right-1 w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                          {index === 0 && (
+                            <span className="absolute bottom-1 left-1 bg-vizualiza-purple text-xs px-1 rounded">
+                              Principal
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {projectImages.length === 0 && (
+                    <Input
+                      placeholder="URL da imagem principal"
+                      value={formData.image}
+                      onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
+                      required
+                      className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                    />
+                  )}
+                </div>
 
                 <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
                   <SelectTrigger className="bg-white/10 border-white/20 text-white">
@@ -219,7 +309,7 @@ const AdminPanel = ({ onClose }: AdminPanelProps) => {
                     className="flex-1 bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    {editingProject ? 'Atualizar' : 'Criar'}
+                    {editingProjectState ? 'Atualizar' : 'Criar'}
                   </Button>
                   <Button 
                     type="button"

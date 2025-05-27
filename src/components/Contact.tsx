@@ -40,20 +40,20 @@ const Contact = () => {
     {
       icon: Mail,
       title: 'Email',
-      info: 'contato@vizualiza.com',
+      info: 'gregory@vizualiza.com',
       link: 'mailto:contato@vizualiza.com'
     },
     {
       icon: Phone,
       title: 'Telefone',
-      info: '(11) 99999-9999',
-      link: 'tel:+5511999999999'
+      info: '(41) 99561-8116',
+      link: 'tel:+5541995618116'
     },
     {
       icon: MapPin,
       title: 'Localização',
-      info: 'São Paulo, SP - Brasil',
-      link: '#'
+      info: 'Guaratuba, PR - Brasil',
+      link: 'https://www.google.com/maps/place/Vizualiza+-+Comunica%C3%A7%C3%A3o+Visual/@-25.8800052,-48.6130187,18.75z/data=!4m6!3m5!1s0x94dbf100140036e5:0xef76dad73bac1ea3!8m2!3d-25.8800493!4d-48.6131598!16s%2Fg%2F11wqr_44zf?authuser=0&entry=ttu&g_ep=EgoyMDI1MDUyMS4wIKXMDSoASAFQAw%3D%3D'
     }
   ];
 
@@ -97,9 +97,7 @@ const Contact = () => {
             <div className="bg-gradient-to-r from-vizualiza-purple/20 to-vizualiza-orange/20 p-6 rounded-lg backdrop-blur-sm">
               <h4 className="text-white font-semibold mb-3">Horário de Atendimento</h4>
               <p className="text-gray-300">
-                Segunda a Sexta: 9h às 18h<br />
-                Sábado: 9h às 13h<br />
-                Domingo: Fechado
+                Todos os dias
               </p>
             </div>
           </div>

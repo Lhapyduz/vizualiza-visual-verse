@@ -140,8 +140,39 @@ const AdminPanel = ({ onClose, editingProject, onClearEditingProject }: AdminPan
   };
 
   const handleTagsChange = (value: string) => {
-    const tags = value.split(',').map(tag => tag.trim()).filter(tag => tag);
-    setFormData(prev => ({ ...prev, tags }));
+    // Se o último caractere for uma vírgula, vamos criar uma tag imediatamente
+    if (value.endsWith(',')) {
+      // Remover a vírgula do final e adicionar um espaço para a próxima tag
+      const newValue = value.slice(0, -1) + '; ';
+      
+      // Dividir por ponto e vírgula ou vírgula
+      const tags = newValue
+        .replace(/,/g, ';')
+        .split(';')
+        .map(tag => tag.trim())
+        .filter(tag => tag !== '');
+      
+      // Atualizar o estado com as novas tags
+      setFormData(prev => ({ ...prev, tags }));
+      
+      // Simular um evento para atualizar o campo de input com o novo valor
+      setTimeout(() => {
+        const input = document.querySelector('input[placeholder="Tags (separadas por vírgula ou ponto e vírgula)"]') as HTMLInputElement;
+        if (input) {
+          input.value = newValue;
+          input.focus();
+          // Posicionar o cursor no final do texto
+          input.selectionStart = input.selectionEnd = input.value.length;
+        }
+      }, 0);
+    } else {
+      // Comportamento normal para outros casos
+      const tags = value
+        .replace(/,/g, ';')
+        .split(';')
+        .filter(tag => tag.trim() !== '');
+      setFormData(prev => ({ ...prev, tags }));
+    }
   };
 
   const addImageUrl = () => {
@@ -297,8 +328,8 @@ const AdminPanel = ({ onClose, editingProject, onClearEditingProject }: AdminPan
                 />
 
                 <Input
-                  placeholder="Tags (separadas por vírgula)"
-                  value={formData.tags.join(', ')}
+                  placeholder="Tags (separadas por vírgula ou ponto e vírgula)"
+                  value={formData.tags.join('; ')}
                   onChange={(e) => handleTagsChange(e.target.value)}
                   className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                 />

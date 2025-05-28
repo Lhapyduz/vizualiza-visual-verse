@@ -8,6 +8,8 @@ import AdminPanel from '@/components/AdminPanel';
 import AdminLogin from '@/components/AdminLogin';
 import CustomCursor from '@/components/CustomCursor';
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Helmet } from 'react-helmet';
 
 interface Project {
   id: string;
@@ -58,6 +60,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-vizualiza-bg-dark text-white overflow-x-hidden relative">
+      <Helmet>
+        <title>Vizualiza Visual Verse | Design e Identidade Visual</title>
+        <meta name="description" content="Estúdio de design especializado em identidade visual, web design e branding. Transformamos sua marca com soluções criativas e impactantes." />
+        <meta name="keywords" content="design, identidade visual, branding, web design, logo, marca, estúdio criativo" />
+        <meta property="og:title" content="Vizualiza Visual Verse | Design e Identidade Visual" />
+        <meta property="og:description" content="Estúdio de design especializado em identidade visual, web design e branding. Transformamos sua marca com soluções criativas e impactantes." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://vizualiza.com.br" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Vizualiza Visual Verse | Design e Identidade Visual" />
+        <meta name="twitter:description" content="Estúdio de design especializado em identidade visual, web design e branding." />
+        <link rel="canonical" href="https://vizualiza.com.br" />
+      </Helmet>
+      
       <CustomCursor />
       <Navbar 
         onAdminClick={handleAdminClick} 
@@ -79,7 +95,12 @@ const Index = () => {
           onClearEditingProject={() => setEditingProject(null)}
         />
       ) : (
-        <>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <Hero />
           <About />
           <Portfolio 
@@ -87,7 +108,7 @@ const Index = () => {
             onEditProject={handleEditProject}
           />
           <Contact />
-        </>
+        </motion.div>
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { Helmet } from "react-helmet";
 
 const NotFound = () => {
   const location = useLocation();
@@ -13,6 +14,13 @@ const NotFound = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <Helmet>
+        <title>Página não encontrada | Vizualiza Visual Verse</title>
+        <meta name="description" content="A página que você está procurando não foi encontrada. Volte para a página inicial do Vizualiza Visual Verse." />
+        <meta name="robots" content="noindex, nofollow" />
+        <meta property="og:title" content="Página não encontrada | Vizualiza Visual Verse" />
+        <meta property="og:description" content="A página que você está procurando não foi encontrada." />
+      </Helmet>
       <div className="text-center">
         <h1 className="text-4xl font-bold mb-4">404</h1>
         <p className="text-xl text-gray-600 mb-4">Oops! Page not found</p>

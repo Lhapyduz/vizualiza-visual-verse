@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import { ExternalLink, Calendar, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProjectModal from './ProjectModal';
@@ -132,10 +134,11 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
               onClick={() => openProjectModal(project)}
             >
               <div className="relative overflow-hidden">
-                <img 
+                <LazyLoadImage 
                   src={project.image} 
                   alt={project.title}
                   className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+                  effect="blur"
                 />
                 <div className="absolute inset-0 bg-vizualiza-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                   <ExternalLink className="w-8 h-8 text-white" />

@@ -16,11 +16,24 @@ interface ProjectModalProps {
 const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: ProjectModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
-  // Only use actual project images, no placeholder images
-  const projectImages = [
-    project.featured_image,
-    ...(project.images?.map(img => img.image_url) || [])
-  ].filter(Boolean);
+  // Create a unique array of images, avoiding duplicates
+  const projectImages: string[] = [];
+  
+  // Add featured image if it exists
+  if (project.featured_image) {
+    projectImages.push(project.featured_image);
+  }
+  
+  // Add additional images, but avoid duplicating the featured image
+  if (project.images && project.images.length > 0) {
+    project.images.forEach(img => {
+      const imageUrl = img.image_url;
+      // Only add if it's not already in the array
+      if (!projectImages.includes(imageUrl)) {
+        projectImages.push(imageUrl);
+      }
+    });
+  }
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % projectImages.length);
@@ -125,7 +138,7 @@ const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: Pro
                 <div className="flex gap-3 overflow-x-auto pb-2">
                   {projectImages.map((img, index) => (
                     <button
-                      key={index}
+                      key={`${img}-${index}`}
                       onClick={() => setCurrentImageIndex(index)}
                       className={`flex-shrink-0 w-20 h-16 rounded-lg border-2 transition-all duration-300 overflow-hidden ${
                         currentImageIndex === index
@@ -148,12 +161,14 @@ const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: Pro
           {/* Project Details Section */}
           <div className={`space-y-8 ${projectImages.length === 0 ? 'lg:col-span-2' : ''}`}>
             {/* About Section */}
-            <div>
-              <h2 className="text-2xl font-bold text-white mb-4">Sobre o Projeto</h2>
-              <p className="text-gray-300 leading-relaxed text-lg">
-                {project.description}
-              </p>
-            </div>
+            {project.description && (
+              <div>
+                <h2 className="text-2xl font-bold text-white mb-4">Sobre o Projeto</h2>
+                <p className="text-gray-300 leading-relaxed text-lg">
+                  {project.description}
+                </p>
+              </div>
+            )}
 
             {/* Technologies Section - Only show if there are tags */}
             {project.tags && project.tags.length > 0 && (

@@ -1,9 +1,8 @@
+
 import React, { useState, useMemo } from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
-import { ExternalLink, Calendar, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProjectModal from './ProjectModal';
+import ProjectCard from './ProjectCard';
 import AdvancedSearch from './AdvancedSearch';
 import ScrollAnimation from './ScrollAnimation';
 import { motion } from 'framer-motion';
@@ -163,56 +162,12 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
         {/* Projects Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredProjects.map((project, index) => (
-            <ScrollAnimation key={project.id} direction="up" delay={index * 0.1}>
-              <motion.div 
-                className="group bg-white/5 rounded-lg overflow-hidden backdrop-blur-sm hover:bg-white/10 transition-all duration-300 cursor-pointer"
-                whileHover={{ scale: 1.05, y: -5 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => openProjectModal(project)}
-              >
-                <div className="relative overflow-hidden">
-                  <LazyLoadImage 
-                    src={project.featured_image || project.image} 
-                    alt={project.title}
-                    className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                    effect="blur"
-                  />
-                  <div className="absolute inset-0 bg-vizualiza-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <ExternalLink className="w-8 h-8 text-white" />
-                  </div>
-                </div>
-                
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-vizualiza-orange text-sm font-medium">{project.category}</span>
-                    <div className="flex items-center text-gray-400 text-sm">
-                      <Calendar className="w-4 h-4 mr-1" />
-                      {new Date(project.date).toLocaleDateString('pt-BR')}
-                    </div>
-                  </div>
-                  
-                  <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-vizualiza-purple transition-colors duration-300">
-                    {project.title}
-                  </h3>
-                  
-                  <p className="text-gray-400 mb-4 leading-relaxed">
-                    {project.description}
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {(project.tags || []).map((tag) => (
-                      <span 
-                        key={tag}
-                        className="inline-flex items-center px-3 py-1 bg-vizualiza-purple/20 text-vizualiza-purple text-xs rounded-full hover:bg-vizualiza-purple/30 transition-colors duration-200"
-                      >
-                        <Tag className="w-3 h-3 mr-1" />
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            </ScrollAnimation>
+            <ProjectCard
+              key={project.id}
+              project={project}
+              index={index}
+              onClick={() => openProjectModal(project)}
+            />
           ))}
         </div>
 

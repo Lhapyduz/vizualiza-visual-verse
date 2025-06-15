@@ -65,6 +65,9 @@ const VoiceCommands = () => {
     } else if (command.includes('portfólio') || command.includes('portfolio')) {
       document.getElementById('portfolio')?.scrollIntoView({ behavior: 'smooth' });
       speak('Navegando para o portfólio');
+    } else if (command.includes('blog')) {
+      document.getElementById('blog')?.scrollIntoView({ behavior: 'smooth' });
+      speak('Navegando para o blog');
     } else if (command.includes('contato')) {
       document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
       speak('Navegando para a seção de contato');
@@ -75,7 +78,7 @@ const VoiceCommands = () => {
       // Implementar mudança para tema claro
       speak('Alterando para tema claro');
     } else if (command.includes('help') || command.includes('ajuda')) {
-      speak('Comandos disponíveis: início, sobre, portfólio, contato, tema escuro, tema claro');
+      speak('Comandos disponíveis: início, sobre, portfólio, blog, contato, tema escuro, tema claro');
     } else {
       speak('Comando não reconhecido. Diga "ajuda" para ver os comandos disponíveis');
     }

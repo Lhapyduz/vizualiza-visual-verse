@@ -9,7 +9,7 @@ import AdminLogin from '@/components/AdminLogin';
 import CustomCursor from '@/components/CustomCursor';
 import ChatBot from '@/components/ChatBot';
 import VoiceCommands from '@/components/VoiceCommands';
-import Analytics from '@/components/Analytics';
+import Blog from '@/components/Blog';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -50,7 +50,7 @@ const Index = () => {
     },
     onSwipeLeft: () => {
       // Ir para próxima seção
-      const sections = ['hero', 'about', 'portfolio', 'contact'];
+      const sections = ['hero', 'about', 'portfolio', 'blog', 'contact'];
       const currentSection = getCurrentSection();
       const currentIndex = sections.indexOf(currentSection);
       const nextIndex = (currentIndex + 1) % sections.length;
@@ -58,7 +58,7 @@ const Index = () => {
     },
     onSwipeRight: () => {
       // Ir para seção anterior
-      const sections = ['hero', 'about', 'portfolio', 'contact'];
+      const sections = ['hero', 'about', 'portfolio', 'blog', 'contact'];
       const currentSection = getCurrentSection();
       const currentIndex = sections.indexOf(currentSection);
       const prevIndex = (currentIndex - 1 + sections.length) % sections.length;
@@ -67,7 +67,7 @@ const Index = () => {
   });
 
   const getCurrentSection = () => {
-    const sections = ['hero', 'about', 'portfolio', 'contact'];
+    const sections = ['hero', 'about', 'portfolio', 'blog', 'contact'];
     const scrollPosition = window.scrollY + window.innerHeight / 2;
     
     for (const section of sections) {
@@ -159,7 +159,7 @@ const Index = () => {
             isAdmin={isAdminLoggedIn}
             onEditProject={handleEditProject}
           />
-          <Analytics />
+          <Blog />
           <div className="py-20 px-4 bg-vizualiza-bg-dark">
             <div className="max-w-4xl mx-auto">
               <NewsletterSignup />

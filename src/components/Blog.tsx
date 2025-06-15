@@ -1,0 +1,313 @@
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
+import { Calendar, Tag, Clock, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import BlogModal from './BlogModal';
+import AdvancedSearch from './AdvancedSearch';
+import ScrollAnimation from './ScrollAnimation';
+import { motion } from 'framer-motion';
+
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  image: string;
+  category: string;
+  date: string;
+  author: string;
+  readTime: string;
+  tags: string[];
+}
+
+interface BlogProps {
+  isAdmin?: boolean;
+  onEditPost?: (post: BlogPost) => void;
+}
+
+interface SearchFilters {
+  searchTerm: string;
+  category: string;
+  dateRange: 'all' | 'recent' | 'lastYear';
+  tags: string[];
+}
+
+const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchFilters, setSearchFilters] = useState<SearchFilters>({
+    searchTerm: '',
+    category: '',
+    dateRange: 'all',
+    tags: []
+  });
+
+  const categories = ['Todos', 'Design', 'Tecnologia', 'Branding', 'Tendências', 'Tutoriais'];
+
+  const openPostModal = (post: BlogPost) => {
+    setSelectedPost(post);
+    setIsModalOpen(true);
+  };
+
+  const closePostModal = () => {
+    setIsModalOpen(false);
+    setSelectedPost(null);
+  };
+
+  useEffect(() => {
+    // Posts de exemplo
+    const samplePosts: BlogPost[] = [
+      {
+        id: '1',
+        title: 'Tendências de Design para 2024',
+        excerpt: 'Explore as principais tendências visuais que estão moldando o design gráfico e web design neste ano.',
+        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+        image: 'https://images.unsplash.com/photo-1560472355-536de3962603?w=600&h=400&fit=crop',
+        category: 'Tendências',
+        date: '2024-06-10',
+        author: 'Ana Silva',
+        readTime: '5 min',
+        tags: ['Design', 'Tendências', '2024']
+      },
+      {
+        id: '2',
+        title: 'Como Criar uma Identidade Visual Marcante',
+        excerpt: 'Guia completo para desenvolver uma identidade visual que conecte com seu público-alvo.',
+        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+        image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&h=400&fit=crop',
+        category: 'Branding',
+        date: '2024-06-05',
+        author: 'Carlos Mendes',
+        readTime: '8 min',
+        tags: ['Branding', 'Identidade', 'Logo']
+      },
+      {
+        id: '3',
+        title: 'Ferramentas Essenciais para Designers',
+        excerpt: 'Descubra as melhores ferramentas e recursos para otimizar seu workflow de design.',
+        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+        image: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=600&h=400&fit=crop',
+        category: 'Tecnologia',
+        date: '2024-05-28',
+        author: 'Maria Santos',
+        readTime: '6 min',
+        tags: ['Ferramentas', 'Workflow', 'Produtividade']
+      },
+      {
+        id: '4',
+        title: 'Psicologia das Cores no Design',
+        excerpt: 'Como as cores influenciam emoções e comportamentos, e como usar isso a seu favor.',
+        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+        image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&h=400&fit=crop',
+        category: 'Design',
+        date: '2024-05-20',
+        author: 'João Pedro',
+        readTime: '7 min',
+        tags: ['Cores', 'Psicologia', 'Design']
+      }
+    ];
+
+    const savedPosts = localStorage.getItem('vizualiza-posts');
+    if (savedPosts) {
+      setPosts([...JSON.parse(savedPosts), ...samplePosts]);
+    } else {
+      setPosts(samplePosts);
+    }
+  }, []);
+
+  // Get all available tags
+  const availableTags = useMemo(() => {
+    const allTags = posts.flatMap(post => post.tags);
+    return [...new Set(allTags)];
+  }, [posts]);
+
+  // Filter posts based on search and filters
+  const filteredPosts = useMemo(() => {
+    let filtered = posts;
+
+    // Apply category filter (legacy and new)
+    if (selectedCategory !== 'Todos') {
+      filtered = filtered.filter(post => post.category === selectedCategory);
+    }
+    if (searchFilters.category) {
+      filtered = filtered.filter(post => post.category === searchFilters.category);
+    }
+
+    // Apply search term filter
+    if (searchFilters.searchTerm) {
+      const term = searchFilters.searchTerm.toLowerCase();
+      filtered = filtered.filter(post => 
+        post.title.toLowerCase().includes(term) ||
+        post.excerpt.toLowerCase().includes(term) ||
+        post.tags.some(tag => tag.toLowerCase().includes(term))
+      );
+    }
+
+    // Apply date range filter
+    if (searchFilters.dateRange !== 'all') {
+      const now = new Date();
+      const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+      const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+
+      filtered = filtered.filter(post => {
+        const postDate = new Date(post.date);
+        if (searchFilters.dateRange === 'recent') {
+          return postDate >= threeMonthsAgo;
+        } else if (searchFilters.dateRange === 'lastYear') {
+          return postDate >= oneYearAgo;
+        }
+        return true;
+      });
+    }
+
+    // Apply tags filter
+    if (searchFilters.tags.length > 0) {
+      filtered = filtered.filter(post =>
+        searchFilters.tags.some(tag => post.tags.includes(tag))
+      );
+    }
+
+    return filtered;
+  }, [posts, selectedCategory, searchFilters]);
+
+  return (
+    <section id="blog" className="py-20 px-4 bg-vizualiza-bg-light">
+      <div className="max-w-7xl mx-auto">
+        <ScrollAnimation direction="up">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <span className="text-white">Nosso </span>
+              <span className="bg-vizualiza-gradient bg-clip-text text-transparent">Blog</span>
+            </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+              Descubra insights, tendências e dicas do mundo do design através 
+              dos nossos artigos especializados.
+            </p>
+          </div>
+        </ScrollAnimation>
+
+        {/* Advanced Search */}
+        <ScrollAnimation direction="up" delay={0.2}>
+          <AdvancedSearch
+            onSearch={setSearchFilters}
+            availableTags={availableTags}
+            categories={categories.slice(1)} // Remove "Todos" from search categories
+          />
+        </ScrollAnimation>
+
+        {/* Legacy Category Filter */}
+        <ScrollAnimation direction="up" delay={0.4}>
+          <div className="flex flex-wrap justify-center gap-4 mb-12">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                variant={selectedCategory === category ? "default" : "outline"}
+                className={`px-6 py-2 transition-all duration-300 hover:scale-105 ${
+                  selectedCategory === category
+                    ? 'bg-vizualiza-purple hover:bg-vizualiza-purple-dark text-white'
+                    : 'border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white'
+                }`}
+              >
+                {category}
+              </Button>
+            ))}
+          </div>
+        </ScrollAnimation>
+
+        {/* Posts Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {filteredPosts.map((post, index) => (
+            <ScrollAnimation key={post.id} direction="up" delay={index * 0.1}>
+              <motion.article 
+                className="group bg-white/5 rounded-lg overflow-hidden backdrop-blur-sm hover:bg-white/10 transition-all duration-300 cursor-pointer"
+                whileHover={{ scale: 1.05, y: -5 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => openPostModal(post)}
+              >
+                <div className="relative overflow-hidden">
+                  <LazyLoadImage 
+                    src={post.image} 
+                    alt={post.title}
+                    className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+                    effect="blur"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span className="bg-vizualiza-orange text-white text-sm font-medium px-3 py-1 rounded-full">
+                      {post.category}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-3 text-sm text-gray-400">
+                    <div className="flex items-center">
+                      <User className="w-4 h-4 mr-1" />
+                      {post.author}
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="w-4 h-4 mr-1" />
+                      {post.readTime}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center text-gray-400 text-sm mb-3">
+                    <Calendar className="w-4 h-4 mr-1" />
+                    {new Date(post.date).toLocaleDateString('pt-BR')}
+                  </div>
+                  
+                  <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-vizualiza-purple transition-colors duration-300">
+                    {post.title}
+                  </h3>
+                  
+                  <p className="text-gray-400 mb-4 leading-relaxed">
+                    {post.excerpt}
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-2">
+                    {post.tags.map((tag) => (
+                      <span 
+                        key={tag}
+                        className="inline-flex items-center px-3 py-1 bg-vizualiza-purple/20 text-vizualiza-purple text-xs rounded-full hover:bg-vizualiza-purple/30 transition-colors duration-200"
+                      >
+                        <Tag className="w-3 h-3 mr-1" />
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </motion.article>
+            </ScrollAnimation>
+          ))}
+        </div>
+
+        {filteredPosts.length === 0 && (
+          <ScrollAnimation direction="up">
+            <div className="text-center py-16">
+              <p className="text-gray-400 text-lg">
+                Nenhum post encontrado com os filtros aplicados.
+              </p>
+            </div>
+          </ScrollAnimation>
+        )}
+      </div>
+
+      {/* Blog Modal */}
+      {selectedPost && (
+        <BlogModal
+          post={selectedPost}
+          isOpen={isModalOpen}
+          onClose={closePostModal}
+          isAdmin={isAdmin}
+          onEdit={onEditPost}
+        />
+      )}
+    </section>
+  );
+};
+
+export default Blog;

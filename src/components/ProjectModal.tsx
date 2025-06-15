@@ -1,10 +1,8 @@
-
 import { useState } from 'react';
 import { X, Calendar, Tag, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ImageZoom from './ImageZoom';
 import { Project } from '@/hooks/useProjects';
-
 interface ProjectModalProps {
   project: Project;
   isOpen: boolean;
@@ -12,18 +10,23 @@ interface ProjectModalProps {
   isAdmin?: boolean;
   onEdit?: (project: Project) => void;
 }
-
-const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: ProjectModalProps) => {
+const ProjectModal = ({
+  project,
+  isOpen,
+  onClose,
+  isAdmin = false,
+  onEdit
+}: ProjectModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
+
   // Create a unique array of images, avoiding duplicates
   const projectImages: string[] = [];
-  
+
   // Add featured image if it exists
   if (project.featured_image) {
     projectImages.push(project.featured_image);
   }
-  
+
   // Add additional images, but avoid duplicating the featured image
   if (project.images && project.images.length > 0) {
     project.images.forEach(img => {
@@ -34,33 +37,21 @@ const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: Pro
       }
     });
   }
-
   const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % projectImages.length);
+    setCurrentImageIndex(prev => (prev + 1) % projectImages.length);
   };
-
   const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + projectImages.length) % projectImages.length);
+    setCurrentImageIndex(prev => (prev - 1 + projectImages.length) % projectImages.length);
   };
-
   const handleEdit = () => {
     if (onEdit) {
       onEdit(project);
       onClose();
     }
   };
-
   if (!isOpen) return null;
-
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <div
-        className="bg-vizualiza-bg-dark border border-white/10 rounded-3xl max-w-6xl w-full max-h-[95vh] overflow-hidden animate-scale-in"
-        onClick={(e) => e.stopPropagation()}
-      >
+  return <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-vizualiza-bg-dark border border-white/10 rounded-3xl max-w-6xl w-full max-h-[95vh] overflow-hidden animate-scale-in" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-start justify-between p-8 pb-6">
           <div className="flex-1">
@@ -76,22 +67,10 @@ const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: Pro
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {isAdmin && (
-              <Button
-                onClick={handleEdit}
-                variant="outline"
-                size="icon"
-                className="border-vizualiza-orange text-vizualiza-orange hover:bg-vizualiza-orange hover:text-white transition-all duration-300"
-              >
+            {isAdmin && <Button onClick={handleEdit} variant="outline" size="icon" className="border-vizualiza-orange text-vizualiza-orange hover:bg-vizualiza-orange hover:text-white transition-all duration-300">
                 <Edit className="w-5 h-5" />
-              </Button>
-            )}
-            <Button
-              onClick={onClose}
-              variant="outline"
-              size="icon"
-              className="border-white/20 text-white hover:bg-white/10 transition-all duration-300"
-            >
+              </Button>}
+            <Button onClick={onClose} variant="outline" size="icon" className="border-white/20 text-white transition-all duration-300 bg-gray-950 hover:bg-gray-800 rounded-sm">
               <X className="w-5 h-5" />
             </Button>
           </div>
@@ -100,98 +79,53 @@ const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: Pro
         {/* Content Grid */}
         <div className="grid lg:grid-cols-2 gap-8 px-8 pb-8 max-h-[calc(95vh-140px)] overflow-y-auto">
           {/* Image Gallery Section - Only show if there are images */}
-          {projectImages.length > 0 && (
-            <div className="space-y-6">
+          {projectImages.length > 0 && <div className="space-y-6">
               <div className="relative group">
                 <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-gray-900">
-                  <ImageZoom
-                    src={projectImages[currentImageIndex]}
-                    alt={`${project.title} - ${currentImageIndex + 1}`}
-                    className="w-full h-full"
-                  />
+                  <ImageZoom src={projectImages[currentImageIndex]} alt={`${project.title} - ${currentImageIndex + 1}`} className="w-full h-full" />
                 </div>
                 
-                {projectImages.length > 1 && (
-                  <>
-                    <Button
-                      onClick={prevImage}
-                      variant="outline"
-                      size="icon"
-                      className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/60 border-white/20 hover:bg-black/80 backdrop-blur-sm"
-                    >
+                {projectImages.length > 1 && <>
+                    <Button onClick={prevImage} variant="outline" size="icon" className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/60 border-white/20 hover:bg-black/80 backdrop-blur-sm">
                       <ChevronLeft className="w-5 h-5" />
                     </Button>
-                    <Button
-                      onClick={nextImage}
-                      variant="outline"
-                      size="icon"
-                      className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/60 border-white/20 hover:bg-black/80 backdrop-blur-sm"
-                    >
+                    <Button onClick={nextImage} variant="outline" size="icon" className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/60 border-white/20 hover:bg-black/80 backdrop-blur-sm">
                       <ChevronRight className="w-5 h-5" />
                     </Button>
-                  </>
-                )}
+                  </>}
               </div>
 
               {/* Thumbnails */}
-              {projectImages.length > 1 && (
-                <div className="flex gap-3 overflow-x-auto pb-2">
-                  {projectImages.map((img, index) => (
-                    <button
-                      key={`${img}-${index}`}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`flex-shrink-0 w-20 h-16 rounded-lg border-2 transition-all duration-300 overflow-hidden ${
-                        currentImageIndex === index
-                          ? 'border-vizualiza-purple shadow-lg shadow-vizualiza-purple/20'
-                          : 'border-white/10 hover:border-white/30'
-                      }`}
-                    >
-                      <img
-                        src={img}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+              {projectImages.length > 1 && <div className="flex gap-3 overflow-x-auto pb-2">
+                  {projectImages.map((img, index) => <button key={`${img}-${index}`} onClick={() => setCurrentImageIndex(index)} className={`flex-shrink-0 w-20 h-16 rounded-lg border-2 transition-all duration-300 overflow-hidden ${currentImageIndex === index ? 'border-vizualiza-purple shadow-lg shadow-vizualiza-purple/20' : 'border-white/10 hover:border-white/30'}`}>
+                      <img src={img} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                    </button>)}
+                </div>}
+            </div>}
 
           {/* Project Details Section */}
           <div className={`space-y-8 ${projectImages.length === 0 ? 'lg:col-span-2' : ''}`}>
             {/* About Section */}
-            {project.description && (
-              <div>
+            {project.description && <div>
                 <h2 className="text-2xl font-bold text-white mb-4">Sobre o Projeto</h2>
                 <p className="text-gray-300 leading-relaxed text-lg">
                   {project.description}
                 </p>
-              </div>
-            )}
+              </div>}
 
             {/* Technologies Section - Only show if there are tags */}
-            {project.tags && project.tags.length > 0 && (
-              <div>
+            {project.tags && project.tags.length > 0 && <div>
                 <h3 className="text-xl font-bold text-white mb-4">Tecnologias e Ferramentas</h3>
                 <div className="flex flex-wrap gap-3">
-                  {project.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-4 py-2 bg-vizualiza-orange/10 text-vizualiza-orange text-sm rounded-full border border-vizualiza-orange/20 hover:bg-vizualiza-orange/20 transition-colors duration-300"
-                    >
+                  {project.tags.map((tag, index) => <span key={index} className="inline-flex items-center px-4 py-2 bg-vizualiza-orange/10 text-vizualiza-orange text-sm rounded-full border border-vizualiza-orange/20 hover:bg-vizualiza-orange/20 transition-colors duration-300">
                       <Tag className="w-3 h-3 mr-2" />
                       {tag}
-                    </span>
-                  ))}
+                    </span>)}
                 </div>
-              </div>
-            )}
+              </div>}
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ProjectModal;

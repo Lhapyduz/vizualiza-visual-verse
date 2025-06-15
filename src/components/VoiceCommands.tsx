@@ -12,11 +12,11 @@ const VoiceCommands = () => {
 
   useEffect(() => {
     // Verificar se o navegador suporta Web Speech API
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognitionConstructor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
-    if (SpeechRecognition) {
+    if (SpeechRecognitionConstructor) {
       setIsSupported(true);
-      const recognitionInstance = new SpeechRecognition();
+      const recognitionInstance = new SpeechRecognitionConstructor();
       
       recognitionInstance.continuous = false;
       recognitionInstance.interimResults = false;
@@ -34,12 +34,12 @@ const VoiceCommands = () => {
         setIsListening(false);
       };
 
-      recognitionInstance.onresult = (event) => {
+      recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
         const command = event.results[0][0].transcript.toLowerCase();
         handleVoiceCommand(command);
       };
 
-      recognitionInstance.onerror = (event) => {
+      recognitionInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
         setIsListening(false);
         toast({
           title: "Erro no reconhecimento",

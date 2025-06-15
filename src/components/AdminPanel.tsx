@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import { X, FolderOpen, FileText, Tag, BarChart3, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProjectList from './admin/ProjectList';
-import ProjectForm from './admin/ProjectForm';
+import ProjectForm, { ProjectFormData } from './admin/ProjectForm';
 import BlogList from './admin/BlogList';
-import BlogForm from './admin/BlogForm';
+import BlogForm, { BlogFormData } from './admin/BlogForm';
 import CategoryManager from './admin/CategoryManager';
 import Analytics from './admin/Analytics';
 import { Project, useProjects } from '@/hooks/useProjects';
@@ -28,8 +28,8 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
   });
 
   // Get projects and blog posts data
-  const { projects, deleteProject, isDeleting: isDeletingProject } = useProjects();
-  const { posts, deletePost, isDeleting: isDeletingPost } = useBlogPosts();
+  const { projects, deleteProject, isDeleting: isDeletingProject, createProject, updateProject, isCreating: isCreatingProject, isUpdating: isUpdatingProject } = useProjects();
+  const { posts, deletePost, isDeleting: isDeletingPost, createPost, updatePost, isCreating: isCreatingPost, isUpdating: isUpdatingPost } = useBlogPosts();
 
   const tabs = [
     { id: 'projects', label: 'Projetos', icon: FolderOpen },
@@ -57,13 +57,46 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
     console.log('Edit post:', post);
   };
 
+  const handleProjectSubmit = async (data: ProjectFormData) => {
+    try {
+      if (editingProject) {
+        await updateProject({ id: editingProject.id, ...data });
+      } else {
+        await createProject(data);
+      }
+      onClearEditingProject();
+    } catch (error) {
+      console.error('Error submitting project:', error);
+    }
+  };
+
+  const handleBlogSubmit = async (data: BlogFormData) => {
+    try {
+      const blogData = {
+        ...data,
+        image: data.images[0] || ''
+      };
+      
+      if (editingPost) {
+        await updatePost({ id: editingPost.id, ...blogData });
+      } else {
+        await createPost(blogData);
+      }
+      onClearEditingPost();
+    } catch (error) {
+      console.error('Error submitting blog post:', error);
+    }
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'projects':
         return editingProject ? (
           <ProjectForm
             editingProject={editingProject}
+            onSubmit={handleProjectSubmit}
             onCancel={onClearEditingProject}
+            isLoading={isCreatingProject || isUpdatingProject}
           />
         ) : (
           <ProjectList
@@ -77,7 +110,9 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
         return editingPost ? (
           <BlogForm
             editingPost={editingPost}
+            onSubmit={handleBlogSubmit}
             onCancel={onClearEditingPost}
+            isLoading={isCreatingPost || isUpdatingPost}
           />
         ) : (
           <BlogList

@@ -64,16 +64,13 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
   const handleProjectSubmit = async (data: ProjectFormData) => {
     try {
       if (editingProject) {
-        // For updating, convert string URLs to proper format expected by updateProject
+        // For updating, pass the data without including images in the main object
+        // The updateProject function handles images separately
+        const { images, ...projectInfo } = data;
         const updateData = {
           id: editingProject.id,
-          title: data.title,
-          description: data.description,
-          category: data.category,
-          date: data.date,
-          tags: data.tags,
-          featured_image: data.featured_image,
-          images: data.images || [] // Pass as string array for update
+          ...projectInfo,
+          images: images || [] // This will be handled separately in the updateProject implementation
         };
         await updateProject(updateData);
       } else {

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import ImageUpload from './ImageUpload';
 
 interface AdminPanelProps {
   onClose: () => void;
@@ -290,6 +291,19 @@ const AdminPanel = ({
     setPostFormData(prev => ({ ...prev, tags }));
   };
 
+  const handleProjectImagesSelected = (images: string[]) => {
+    setProjectImages(images);
+    if (images.length > 0) {
+      setProjectFormData(prev => ({ ...prev, image: images[0] }));
+    }
+  };
+
+  const handlePostImageSelected = (images: string[]) => {
+    if (images.length > 0) {
+      setPostFormData(prev => ({ ...prev, image: images[0] }));
+    }
+  };
+
   return (
     <div className="min-h-screen bg-vizualiza-bg-dark text-white p-6">
       <div className="max-w-7xl mx-auto">
@@ -357,7 +371,7 @@ const AdminPanel = ({
               </div>
 
               {isCreating && (
-                <form onSubmit={handleProjectSubmit} className="space-y-4">
+                <form onSubmit={handleProjectSubmit} className="space-y-6">
                   <Input
                     placeholder="Título do projeto"
                     value={projectFormData.title}
@@ -374,13 +388,16 @@ const AdminPanel = ({
                     className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                   />
 
-                  <Input
-                    placeholder="URL da imagem"
-                    value={projectFormData.image}
-                    onChange={(e) => setProjectFormData(prev => ({ ...prev, image: e.target.value }))}
-                    required
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-white mb-3">
+                      Imagens do Projeto
+                    </label>
+                    <ImageUpload
+                      onImagesSelected={handleProjectImagesSelected}
+                      maxImages={5}
+                      existingImages={projectImages}
+                    />
+                  </div>
 
                   <Select value={projectFormData.category} onValueChange={(value) => setProjectFormData(prev => ({ ...prev, category: value }))}>
                     <SelectTrigger className="bg-white/10 border-white/20 text-white">
@@ -497,7 +514,7 @@ const AdminPanel = ({
               </div>
 
               {isCreating && (
-                <form onSubmit={handlePostSubmit} className="space-y-4">
+                <form onSubmit={handlePostSubmit} className="space-y-6">
                   <Input
                     placeholder="Título do post"
                     value={postFormData.title}
@@ -523,13 +540,16 @@ const AdminPanel = ({
                     className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                   />
 
-                  <Input
-                    placeholder="URL da imagem"
-                    value={postFormData.image}
-                    onChange={(e) => setPostFormData(prev => ({ ...prev, image: e.target.value }))}
-                    required
-                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-white mb-3">
+                      Imagem do Post
+                    </label>
+                    <ImageUpload
+                      onImagesSelected={handlePostImageSelected}
+                      maxImages={1}
+                      existingImages={postFormData.image ? [postFormData.image] : []}
+                    />
+                  </div>
 
                   <Select value={postFormData.category} onValueChange={(value) => setPostFormData(prev => ({ ...prev, category: value }))}>
                     <SelectTrigger className="bg-white/10 border-white/20 text-white">

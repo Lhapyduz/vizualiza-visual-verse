@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
@@ -201,15 +200,11 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                 className="group bg-white/5 rounded-lg overflow-hidden backdrop-blur-sm hover:bg-white/10 transition-all duration-300 cursor-pointer"
                 whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => openPostModal({
-                  ...post,
-                  image: post.featured_image || post.image,
-                  readTime: post.read_time || post.readTime
-                })}
+                onClick={() => openPostModal(post)}
               >
                 <div className="relative overflow-hidden">
                   <LazyLoadImage 
-                    src={post.featured_image || 'https://images.unsplash.com/photo-1560472355-536de3962603?w=600&h=400&fit=crop'} 
+                    src={post.featured_image || post.image} 
                     alt={post.title}
                     className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                     effect="blur"
@@ -229,7 +224,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                     </div>
                     <div className="flex items-center">
                       <Clock className="w-4 h-4 mr-1" />
-                      {post.read_time}
+                      {post.read_time || post.readTime}
                     </div>
                   </div>
 

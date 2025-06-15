@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
@@ -169,14 +168,11 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
                 className="group bg-white/5 rounded-lg overflow-hidden backdrop-blur-sm hover:bg-white/10 transition-all duration-300 cursor-pointer"
                 whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => openProjectModal({
-                  ...project,
-                  image: project.featured_image || project.images?.[0]?.image_url
-                })}
+                onClick={() => openProjectModal(project)}
               >
                 <div className="relative overflow-hidden">
                   <LazyLoadImage 
-                    src={project.featured_image || project.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&h=400&fit=crop'} 
+                    src={project.featured_image || project.image} 
                     alt={project.title}
                     className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                     effect="blur"

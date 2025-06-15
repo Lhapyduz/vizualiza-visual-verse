@@ -16,9 +16,9 @@ export interface BlogPost {
   date: string;
   created_at?: string;
   updated_at?: string;
-  // Add compatibility properties for components
-  image?: string;
-  readTime?: string;
+  // Add compatibility properties for components (required for consistency)
+  image: string;
+  readTime: string;
 }
 
 interface CreateBlogPostData {
@@ -57,11 +57,12 @@ export const useBlogPosts = () => {
 
         if (response.ok) {
           const data = await response.json();
-          return (data as BlogPost[]).map(post => ({
+          return (data as any[]).map(post => ({
             ...post,
-            image: post.featured_image,
-            readTime: post.read_time
-          }));
+            tags: Array.isArray(post.tags) ? post.tags.filter((tag: any) => typeof tag === 'string') : [],
+            image: post.featured_image || 'https://images.unsplash.com/photo-1560472355-536de3962603?w=600&h=400&fit=crop',
+            readTime: post.read_time || '5 min'
+          })) as BlogPost[];
         } else {
           throw new Error('Supabase fetch failed');
         }
@@ -69,11 +70,12 @@ export const useBlogPosts = () => {
         console.log('Error fetching blog posts, using localStorage fallback:', err);
         const localPosts = localStorage.getItem('vizualiza-blog-posts');
         const posts = localPosts ? JSON.parse(localPosts) : [];
-        return posts.map((post: BlogPost) => ({
+        return posts.map((post: any) => ({
           ...post,
-          image: post.featured_image,
-          readTime: post.read_time
-        }));
+          tags: Array.isArray(post.tags) ? post.tags.filter((tag: any) => typeof tag === 'string') : [],
+          image: post.featured_image || post.image || 'https://images.unsplash.com/photo-1560472355-536de3962603?w=600&h=400&fit=crop',
+          readTime: post.read_time || post.readTime || '5 min'
+        })) as BlogPost[];
       }
     }
   });

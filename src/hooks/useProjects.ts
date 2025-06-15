@@ -14,8 +14,8 @@ export interface Project {
   images?: ProjectImage[];
   created_at?: string;
   updated_at?: string;
-  // Add compatibility property for components
-  image?: string;
+  // Add compatibility property for components (required for consistency)
+  image: string;
 }
 
 export interface ProjectImage {
@@ -63,7 +63,8 @@ export const useProjects = () => {
           return (data || []).map((project: any) => ({
             ...project,
             images: project.project_images || [],
-            image: project.featured_image || project.project_images?.[0]?.image_url
+            tags: Array.isArray(project.tags) ? project.tags.filter((tag: any) => typeof tag === 'string') : [],
+            image: project.featured_image || project.project_images?.[0]?.image_url || 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&h=400&fit=crop'
           })) as Project[];
         } else {
           throw new Error('Supabase fetch failed');
@@ -72,10 +73,11 @@ export const useProjects = () => {
         console.log('Error fetching projects, using localStorage fallback:', err);
         const localProjects = localStorage.getItem('vizualiza-projects');
         const projects = localProjects ? JSON.parse(localProjects) : [];
-        return projects.map((project: Project) => ({
+        return projects.map((project: any) => ({
           ...project,
-          image: project.featured_image || project.images?.[0]?.image_url
-        }));
+          tags: Array.isArray(project.tags) ? project.tags.filter((tag: any) => typeof tag === 'string') : [],
+          image: project.featured_image || project.images?.[0]?.image_url || project.image || 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&h=400&fit=crop'
+        })) as Project[];
       }
     }
   });

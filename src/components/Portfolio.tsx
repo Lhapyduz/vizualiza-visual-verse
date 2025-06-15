@@ -50,7 +50,7 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
 
   // Get all available tags
   const availableTags = useMemo(() => {
-    const allTags = projects.flatMap(project => project.tags);
+    const allTags = projects.flatMap(project => project.tags || []);
     return [...new Set(allTags)];
   }, [projects]);
 
@@ -72,7 +72,7 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
       filtered = filtered.filter(project => 
         project.title.toLowerCase().includes(term) ||
         project.description.toLowerCase().includes(term) ||
-        project.tags.some(tag => tag.toLowerCase().includes(term))
+        (project.tags || []).some(tag => tag.toLowerCase().includes(term))
       );
     }
 
@@ -96,7 +96,7 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
     // Apply tags filter
     if (searchFilters.tags.length > 0) {
       filtered = filtered.filter(project =>
-        searchFilters.tags.some(tag => project.tags.includes(tag))
+        searchFilters.tags.some(tag => (project.tags || []).includes(tag))
       );
     }
 
@@ -201,7 +201,7 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
                   </p>
                   
                   <div className="flex flex-wrap gap-2">
-                    {project.tags.map((tag) => (
+                    {(project.tags || []).map((tag) => (
                       <span 
                         key={tag}
                         className="inline-flex items-center px-3 py-1 bg-vizualiza-purple/20 text-vizualiza-purple text-xs rounded-full hover:bg-vizualiza-purple/30 transition-colors duration-200"

@@ -69,7 +69,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
 
   // Get all available tags
   const availableTags = useMemo(() => {
-    const allTags = posts.flatMap(post => post.tags);
+    const allTags = posts.flatMap(post => post.tags || []);
     return [...new Set(allTags)];
   }, [posts]);
 
@@ -91,7 +91,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
       filtered = filtered.filter(post => 
         post.title.toLowerCase().includes(term) ||
         post.excerpt.toLowerCase().includes(term) ||
-        post.tags.some(tag => tag.toLowerCase().includes(term))
+        (post.tags || []).some(tag => tag.toLowerCase().includes(term))
       );
     }
 
@@ -115,7 +115,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
     // Apply tags filter
     if (searchFilters.tags.length > 0) {
       filtered = filtered.filter(post =>
-        searchFilters.tags.some(tag => post.tags.includes(tag))
+        searchFilters.tags.some(tag => (post.tags || []).includes(tag))
       );
     }
 
@@ -241,7 +241,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                   </p>
                   
                   <div className="flex flex-wrap gap-2">
-                    {post.tags.map((tag) => (
+                    {(post.tags || []).map((tag) => (
                       <span 
                         key={tag}
                         className="inline-flex items-center px-3 py-1 bg-vizualiza-purple/20 text-vizualiza-purple text-xs rounded-full hover:bg-vizualiza-purple/30 transition-colors duration-200"

@@ -34,7 +34,7 @@ export const useBlogPosts = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch blog posts
+  // Fetch blog posts with fallback to localStorage
   const {
     data: posts = [],
     isLoading,
@@ -43,31 +43,55 @@ export const useBlogPosts = () => {
   } = useQuery({
     queryKey: ['blog-posts'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching blog posts:', error);
-        throw error;
+        if (error) {
+          console.log('Supabase error, falling back to localStorage:', error);
+          // Fallback to localStorage if Supabase fails
+          const localPosts = localStorage.getItem('vizualiza-blog-posts');
+          return localPosts ? JSON.parse(localPosts) : [];
+        }
+
+        return data as BlogPost[];
+      } catch (err) {
+        console.log('Error fetching blog posts, using localStorage fallback:', err);
+        const localPosts = localStorage.getItem('vizualiza-blog-posts');
+        return localPosts ? JSON.parse(localPosts) : [];
       }
-
-      return data as BlogPost[];
     }
   });
 
   // Create blog post mutation
   const createPostMutation = useMutation({
     mutationFn: async (postData: CreateBlogPostData) => {
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .insert([postData])
-        .select()
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .insert([postData])
+          .select()
+          .single();
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        return data;
+      } catch (error) {
+        console.log('Supabase error, saving to localStorage:', error);
+        // Fallback to localStorage
+        const newPost = {
+          id: Date.now().toString(),
+          ...postData,
+          created_at: new Date().toISOString()
+        };
+        
+        const existingPosts = JSON.parse(localStorage.getItem('vizualiza-blog-posts') || '[]');
+        const updatedPosts = [newPost, ...existingPosts];
+        localStorage.setItem('vizualiza-blog-posts', JSON.stringify(updatedPosts));
+        
+        return newPost;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blog-posts'] });
@@ -89,12 +113,22 @@ export const useBlogPosts = () => {
   // Update blog post mutation
   const updatePostMutation = useMutation({
     mutationFn: async ({ id, ...postData }: Partial<BlogPost> & { id: string }) => {
-      const { error } = await supabase
-        .from('blog_posts')
-        .update(postData)
-        .eq('id', id);
+      try {
+        const { error } = await supabase
+          .from('blog_posts')
+          .update(postData)
+          .eq('id', id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } catch (error) {
+        console.log('Supabase error, updating localStorage:', error);
+        // Fallback to localStorage
+        const existingPosts = JSON.parse(localStorage.getItem('vizualiza-blog-posts') || '[]');
+        const updatedPosts = existingPosts.map((p: BlogPost) => 
+          p.id === id ? { ...p, ...postData, updated_at: new Date().toISOString() } : p
+        );
+        localStorage.setItem('vizualiza-blog-posts', JSON.stringify(updatedPosts));
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blog-posts'] });
@@ -116,12 +150,20 @@ export const useBlogPosts = () => {
   // Delete blog post mutation
   const deletePostMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('blog_posts')
-        .delete()
-        .eq('id', id);
+      try {
+        const { error } = await supabase
+          .from('blog_posts')
+          .delete()
+          .eq('id', id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } catch (error) {
+        console.log('Supabase error, deleting from localStorage:', error);
+        // Fallback to localStorage
+        const existingPosts = JSON.parse(localStorage.getItem('vizualiza-blog-posts') || '[]');
+        const updatedPosts = existingPosts.filter((p: BlogPost) => p.id !== id);
+        localStorage.setItem('vizualiza-blog-posts', JSON.stringify(updatedPosts));
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blog-posts'] });

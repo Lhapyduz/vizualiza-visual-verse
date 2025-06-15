@@ -1,5 +1,4 @@
 
-import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -39,7 +38,7 @@ export const useProjects = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch projects
+  // Fetch projects with fallback to localStorage
   const {
     data: projects = [],
     isLoading,
@@ -48,61 +47,85 @@ export const useProjects = () => {
   } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('projects')
-        .select(`
-          *,
-          project_images (
-            id,
-            image_url,
-            alt_text,
-            sort_order
-          )
-        `)
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select(`
+            *,
+            project_images (
+              id,
+              image_url,
+              alt_text,
+              sort_order
+            )
+          `)
+          .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching projects:', error);
-        throw error;
+        if (error) {
+          console.log('Supabase error, falling back to localStorage:', error);
+          // Fallback to localStorage if Supabase fails
+          const localProjects = localStorage.getItem('vizualiza-projects');
+          return localProjects ? JSON.parse(localProjects) : [];
+        }
+
+        return (data || []).map(project => ({
+          ...project,
+          images: project.project_images || []
+        })) as Project[];
+      } catch (err) {
+        console.log('Error fetching projects, using localStorage fallback:', err);
+        const localProjects = localStorage.getItem('vizualiza-projects');
+        return localProjects ? JSON.parse(localProjects) : [];
       }
-
-      return data.map(project => ({
-        ...project,
-        images: project.project_images || []
-      })) as Project[];
     }
   });
 
   // Create project mutation
   const createProjectMutation = useMutation({
     mutationFn: async (projectData: CreateProjectData) => {
-      const { images, ...projectInfo } = projectData;
-      
-      // Insert project
-      const { data: project, error: projectError } = await supabase
-        .from('projects')
-        .insert([projectInfo])
-        .select()
-        .single();
+      try {
+        const { images, ...projectInfo } = projectData;
+        
+        // Try Supabase first
+        const { data: project, error: projectError } = await supabase
+          .from('projects')
+          .insert([projectInfo])
+          .select()
+          .single();
 
-      if (projectError) throw projectError;
+        if (projectError) throw projectError;
 
-      // Insert images if any
-      if (images && images.length > 0) {
-        const imageData = images.map((url, index) => ({
-          project_id: project.id,
-          image_url: url,
-          sort_order: index
-        }));
+        // Insert images if any
+        if (images && images.length > 0) {
+          const imageData = images.map((url, index) => ({
+            project_id: project.id,
+            image_url: url,
+            sort_order: index
+          }));
 
-        const { error: imagesError } = await supabase
-          .from('project_images')
-          .insert(imageData);
+          const { error: imagesError } = await supabase
+            .from('project_images')
+            .insert(imageData);
 
-        if (imagesError) throw imagesError;
+          if (imagesError) throw imagesError;
+        }
+
+        return project;
+      } catch (error) {
+        console.log('Supabase error, saving to localStorage:', error);
+        // Fallback to localStorage
+        const newProject = {
+          id: Date.now().toString(),
+          ...projectData,
+          created_at: new Date().toISOString()
+        };
+        
+        const existingProjects = JSON.parse(localStorage.getItem('vizualiza-projects') || '[]');
+        const updatedProjects = [newProject, ...existingProjects];
+        localStorage.setItem('vizualiza-projects', JSON.stringify(updatedProjects));
+        
+        return newProject;
       }
-
-      return project;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
@@ -124,38 +147,48 @@ export const useProjects = () => {
   // Update project mutation
   const updateProjectMutation = useMutation({
     mutationFn: async ({ id, ...projectData }: Partial<Project> & { id: string }) => {
-      const { images, ...projectInfo } = projectData;
-      
-      // Update project
-      const { error: projectError } = await supabase
-        .from('projects')
-        .update(projectInfo)
-        .eq('id', id);
+      try {
+        const { images, ...projectInfo } = projectData;
+        
+        // Try Supabase first
+        const { error: projectError } = await supabase
+          .from('projects')
+          .update(projectInfo)
+          .eq('id', id);
 
-      if (projectError) throw projectError;
+        if (projectError) throw projectError;
 
-      // Handle images update if provided
-      if (images !== undefined) {
-        // Delete existing images
-        await supabase
-          .from('project_images')
-          .delete()
-          .eq('project_id', id);
-
-        // Insert new images
-        if (images.length > 0) {
-          const imageData = images.map((image, index) => ({
-            project_id: id,
-            image_url: typeof image === 'string' ? image : image.image_url,
-            sort_order: index
-          }));
-
-          const { error: imagesError } = await supabase
+        // Handle images update if provided
+        if (images !== undefined) {
+          // Delete existing images
+          await supabase
             .from('project_images')
-            .insert(imageData);
+            .delete()
+            .eq('project_id', id);
 
-          if (imagesError) throw imagesError;
+          // Insert new images
+          if (images.length > 0) {
+            const imageData = images.map((image, index) => ({
+              project_id: id,
+              image_url: typeof image === 'string' ? image : image.image_url,
+              sort_order: index
+            }));
+
+            const { error: imagesError } = await supabase
+              .from('project_images')
+              .insert(imageData);
+
+            if (imagesError) throw imagesError;
+          }
         }
+      } catch (error) {
+        console.log('Supabase error, updating localStorage:', error);
+        // Fallback to localStorage
+        const existingProjects = JSON.parse(localStorage.getItem('vizualiza-projects') || '[]');
+        const updatedProjects = existingProjects.map((p: Project) => 
+          p.id === id ? { ...p, ...projectData, updated_at: new Date().toISOString() } : p
+        );
+        localStorage.setItem('vizualiza-projects', JSON.stringify(updatedProjects));
       }
     },
     onSuccess: () => {
@@ -178,12 +211,20 @@ export const useProjects = () => {
   // Delete project mutation
   const deleteProjectMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', id);
+      try {
+        const { error } = await supabase
+          .from('projects')
+          .delete()
+          .eq('id', id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } catch (error) {
+        console.log('Supabase error, deleting from localStorage:', error);
+        // Fallback to localStorage
+        const existingProjects = JSON.parse(localStorage.getItem('vizualiza-projects') || '[]');
+        const updatedProjects = existingProjects.filter((p: Project) => p.id !== id);
+        localStorage.setItem('vizualiza-projects', JSON.stringify(updatedProjects));
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });

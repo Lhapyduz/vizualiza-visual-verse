@@ -1,287 +1,140 @@
-
-import { useState, useEffect } from 'react';
-import { X, Plus, Briefcase, BookOpen, Settings } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { X, FolderOpen, FileText, Tag, BarChart3, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { useProjects, Project } from '@/hooks/useProjects';
-import { useBlogPosts, BlogPost } from '@/hooks/useBlogPosts';
-import ProjectForm, { ProjectFormData } from './admin/ProjectForm';
-import BlogForm, { BlogFormData } from './admin/BlogForm';
 import ProjectList from './admin/ProjectList';
+import ProjectForm from './admin/ProjectForm';
 import BlogList from './admin/BlogList';
+import BlogForm from './admin/BlogForm';
 import CategoryManager from './admin/CategoryManager';
+import Analytics from './admin/Analytics';
+import { Project } from '@/hooks/useProjects';
+import { BlogPost } from '@/hooks/useBlogPosts';
+import SocialMediaManager from './admin/SocialMediaManager';
 
 interface AdminPanelProps {
   onClose: () => void;
-  editingProject?: Project | null;
-  editingPost?: BlogPost | null;
-  onClearEditingProject?: () => void;
-  onClearEditingPost?: () => void;
+  editingProject: Project | null;
+  editingPost: BlogPost | null;
+  onClearEditingProject: () => void;
+  onClearEditingPost: () => void;
 }
 
-const AdminPanel = ({ 
-  onClose, 
-  editingProject, 
-  editingPost,
-  onClearEditingProject, 
-  onClearEditingPost 
-}: AdminPanelProps) => {
-  const [activeTab, setActiveTab] = useState<'projects' | 'posts' | 'categories'>('projects');
-  const [editingProjectState, setEditingProjectState] = useState<Project | null>(null);
-  const [editingPostState, setEditingPostState] = useState<BlogPost | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const { toast } = useToast();
+const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProject, onClearEditingPost }: AdminPanelProps) => {
+  const [activeTab, setActiveTab] = useState(() => {
+    if (editingProject) return 'projects';
+    if (editingPost) return 'blog';
+    return 'projects';
+  });
 
-  // Hooks for data management
-  const { 
-    projects, 
-    createProject, 
-    updateProject, 
-    deleteProject,
-    isCreating: isCreatingProject,
-    isUpdating: isUpdatingProject,
-    isDeleting: isDeletingProject
-  } = useProjects();
-
-  const { 
-    posts, 
-    createPost, 
-    updatePost, 
-    deletePost,
-    isCreating: isCreatingPost,
-    isUpdating: isUpdatingPost,
-    isDeleting: isDeletingPost
-  } = useBlogPosts();
+  const tabs = [
+    { id: 'projects', label: 'Projetos', icon: FolderOpen },
+    { id: 'blog', label: 'Blog', icon: FileText },
+    { id: 'categories', label: 'Categorias', icon: Tag },
+    { id: 'social', label: 'Redes Sociais', icon: Share2 },
+    { id: 'analytics', label: 'Analytics', icon: BarChart3 }
+  ];
 
   useEffect(() => {
     if (editingProject) {
       setActiveTab('projects');
-      setEditingProjectState(editingProject);
-      setIsCreating(true);
-      onClearEditingProject?.();
+    } else if (editingPost) {
+      setActiveTab('blog');
     }
+  }, [editingProject, editingPost]);
 
-    if (editingPost) {
-      setActiveTab('posts');
-      setEditingPostState(editingPost);
-      setIsCreating(true);
-      onClearEditingPost?.();
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'projects':
+        return editingProject ? (
+          <ProjectForm 
+            project={editingProject} 
+            onCancel={onClearEditingProject}
+          />
+        ) : (
+          <ProjectList onEditProject={(project) => {
+            // Logic handled in parent component
+          }} />
+        );
+      case 'blog':
+        return editingPost ? (
+          <BlogForm 
+            post={editingPost} 
+            onCancel={onClearEditingPost}
+          />
+        ) : (
+          <BlogList onEditPost={(post) => {
+            // Logic handled in parent component
+          }} />
+        );
+      case 'categories':
+        return <CategoryManager />;
+      case 'social':
+        return <SocialMediaManager />;
+      case 'analytics':
+        return <Analytics />;
+      default:
+        return <ProjectList onEditProject={() => {}} />;
     }
-  }, [editingProject, editingPost, onClearEditingProject, onClearEditingPost]);
-
-  const handleProjectSubmit = (data: ProjectFormData) => {
-    console.log('Submitting project data:', data);
-
-    if (editingProjectState) {
-      // For updates, convert images array to ProjectImage format
-      const updateData = {
-        ...data,
-        images: data.images?.map((url, index) => ({
-          id: '',
-          project_id: editingProjectState.id,
-          image_url: url,
-          sort_order: index
-        })) || []
-      };
-      updateProject({ id: editingProjectState.id, ...updateData });
-    } else {
-      createProject(data);
-    }
-
-    resetProjectForm();
-  };
-
-  const handlePostSubmit = (data: BlogFormData) => {
-    console.log('Submitting post data:', data);
-
-    // Map BlogFormData to the expected format
-    const postData = {
-      title: data.title,
-      excerpt: data.excerpt,
-      content: data.content,
-      category: data.category,
-      author: data.author,
-      read_time: data.readTime,
-      tags: data.tags,
-      featured_image: data.images.length > 0 ? data.images[0] : undefined,
-      date: data.date
-    };
-
-    if (editingPostState) {
-      updatePost({ id: editingPostState.id, ...postData });
-    } else {
-      createPost(postData);
-    }
-
-    resetPostForm();
-  };
-
-  const handleEditProject = (project: Project) => {
-    setEditingProjectState(project);
-    setIsCreating(true);
-  };
-
-  const handleEditPost = (post: BlogPost) => {
-    setEditingPostState(post);
-    setIsCreating(true);
-  };
-
-  const resetProjectForm = () => {
-    setEditingProjectState(null);
-    setIsCreating(false);
-  };
-
-  const resetPostForm = () => {
-    setEditingPostState(null);
-    setIsCreating(false);
   };
 
   return (
-    <div className="min-h-screen bg-vizualiza-bg-dark text-white p-6">
-      <div className="max-w-7xl mx-auto">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+        className="w-full max-w-7xl max-h-[90vh] bg-vizualiza-bg-dark rounded-xl border border-white/20 overflow-hidden"
+      >
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 pt-16">
-          <h1 className="text-3xl font-bold">
-            <span className="bg-vizualiza-gradient bg-clip-text text-transparent">
-              Painel Administrativo
-            </span>
-          </h1>
-          <Button 
+        <div className="p-6 border-b border-white/10 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-white">Painel Administrativo</h2>
+          <Button
             onClick={onClose}
-            variant="outline"
-            className="border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white"
+            variant="ghost"
+            size="icon"
+            className="text-gray-400 hover:text-white"
           >
-            <X className="w-5 h-5 mr-2" />
-            Fechar
+            <X className="w-5 h-5" />
           </Button>
         </div>
 
-        {/* Tabs */}
-        <div className="flex space-x-4 mb-8">
-          <Button
-            onClick={() => setActiveTab('projects')}
-            variant={activeTab === 'projects' ? 'default' : 'outline'}
-            className={activeTab === 'projects' 
-              ? 'bg-vizualiza-purple hover:bg-vizualiza-purple-dark' 
-              : 'border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white'
-            }
-          >
-            <Briefcase className="w-4 h-4 mr-2" />
-            Projetos
-          </Button>
-          <Button
-            onClick={() => setActiveTab('posts')}
-            variant={activeTab === 'posts' ? 'default' : 'outline'}
-            className={activeTab === 'posts' 
-              ? 'bg-vizualiza-purple hover:bg-vizualiza-purple-dark' 
-              : 'border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white'
-            }
-          >
-            <BookOpen className="w-4 h-4 mr-2" />
-            Blog Posts
-          </Button>
-          <Button
-            onClick={() => setActiveTab('categories')}
-            variant={activeTab === 'categories' ? 'default' : 'outline'}
-            className={activeTab === 'categories' 
-              ? 'bg-vizualiza-purple hover:bg-vizualiza-purple-dark' 
-              : 'border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white'
-            }
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Categorias
-          </Button>
+        <div className="flex h-[calc(90vh-100px)]">
+          {/* Sidebar */}
+          <div className="w-64 bg-white/5 border-r border-white/10 p-4">
+            <nav className="space-y-2">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                      activeTab === tab.id
+                        ? 'bg-vizualiza-purple text-white'
+                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-auto p-6">
+            {renderContent()}
+          </div>
         </div>
-
-        {/* Projects Tab */}
-        {activeTab === 'projects' && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Project Form */}
-            <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">
-                  {editingProjectState ? 'Editar Projeto' : 'Novo Projeto'}
-                </h2>
-                {!isCreating && (
-                  <Button 
-                    onClick={() => setIsCreating(true)}
-                    className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Novo
-                  </Button>
-                )}
-              </div>
-
-              {isCreating && (
-                <ProjectForm
-                  onSubmit={handleProjectSubmit}
-                  onCancel={resetProjectForm}
-                  editingProject={editingProjectState}
-                  isLoading={isCreatingProject || isUpdatingProject}
-                />
-              )}
-            </div>
-
-            {/* Projects List */}
-            <ProjectList
-              projects={projects}
-              onEdit={handleEditProject}
-              onDelete={deleteProject}
-              isDeleting={isDeletingProject}
-            />
-          </div>
-        )}
-
-        {/* Posts Tab */}
-        {activeTab === 'posts' && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Post Form */}
-            <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">
-                  {editingPostState ? 'Editar Post' : 'Novo Post'}
-                </h2>
-                {!isCreating && (
-                  <Button 
-                    onClick={() => setIsCreating(true)}
-                    className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Novo
-                  </Button>
-                )}
-              </div>
-
-              {isCreating && (
-                <BlogForm
-                  onSubmit={handlePostSubmit}
-                  onCancel={resetPostForm}
-                  editingPost={editingPostState}
-                  isLoading={isCreatingPost || isUpdatingPost}
-                />
-              )}
-            </div>
-
-            {/* Posts List */}
-            <BlogList
-              posts={posts}
-              onEdit={handleEditPost}
-              onDelete={deletePost}
-              isDeleting={isDeletingPost}
-            />
-          </div>
-        )}
-
-        {/* Categories Tab */}
-        {activeTab === 'categories' && (
-          <div className="grid lg:grid-cols-2 gap-8">
-            <CategoryManager type="project" />
-            <CategoryManager type="blog" />
-          </div>
-        )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

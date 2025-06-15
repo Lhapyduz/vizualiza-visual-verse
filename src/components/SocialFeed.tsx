@@ -1,15 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { Instagram, Linkedin, Heart, MessageCircle, Share2, ExternalLink, Calendar } from 'lucide-react';
+import { Instagram, Linkedin, Heart, MessageCircle, Share2, ExternalLink, Calendar, Music, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ScrollAnimation from './ScrollAnimation';
+import { useSocialMedia } from '@/hooks/useSocialMedia';
 
 interface SocialPost {
   id: string;
-  platform: 'instagram' | 'linkedin';
+  platform: 'instagram' | 'linkedin' | 'facebook' | 'twitter' | 'youtube' | 'tiktok' | 'behance' | 'dribbble';
   content: string;
   image?: string;
   likes: number;
@@ -25,9 +25,12 @@ interface SocialPost {
 }
 
 const SocialFeed = () => {
+  const { getActiveSocialMedias, isLoading: socialLoading } = useSocialMedia();
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [activeTab, setActiveTab] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
+
+  const activeSocialMedias = getActiveSocialMedias();
 
   // Mock data - em produção, isso viria de APIs das redes sociais
   const mockPosts: SocialPost[] = [
@@ -39,11 +42,11 @@ const SocialFeed = () => {
       likes: 127,
       comments: 23,
       date: '2024-01-15T10:30:00Z',
-      url: 'https://instagram.com/p/example1',
+      url: 'https://instagram.com/vizualizaoficial',
       author: {
         name: 'Vizualiza Visual Verse',
         avatar: 'https://images.unsplash.com/photo-1586953209889-5ce391d8cd9b?w=100&h=100&fit=crop',
-        handle: '@vizualiza'
+        handle: '@vizualizaoficial'
       }
     },
     {
@@ -55,37 +58,7 @@ const SocialFeed = () => {
       comments: 12,
       shares: 34,
       date: '2024-01-14T16:45:00Z',
-      url: 'https://linkedin.com/post/example2',
-      author: {
-        name: 'Gregory Vizualiza',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
-        handle: 'gregory-vizualiza'
-      }
-    },
-    {
-      id: '3',
-      platform: 'instagram',
-      content: 'Process design em ação! Do sketches iniciais até o resultado final. Cada etapa tem sua importância na criação de uma identidade marcante. ✨',
-      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=500&h=500&fit=crop',
-      likes: 203,
-      comments: 41,
-      date: '2024-01-13T14:20:00Z',
-      url: 'https://instagram.com/p/example3',
-      author: {
-        name: 'Vizualiza Visual Verse',
-        avatar: 'https://images.unsplash.com/photo-1586953209889-5ce391d8cd9b?w=100&h=100&fit=crop',
-        handle: '@vizualiza'
-      }
-    },
-    {
-      id: '4',
-      platform: 'linkedin',
-      content: 'Tendências de UX/UI para 2024: Minimalismo funcional, micro-interações inteligentes e design inclusivo estão moldando o futuro das interfaces digitais.',
-      likes: 156,
-      comments: 28,
-      shares: 67,
-      date: '2024-01-12T09:15:00Z',
-      url: 'https://linkedin.com/post/example4',
+      url: 'https://linkedin.com/company/vizualiza',
       author: {
         name: 'Gregory Vizualiza',
         avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
@@ -114,17 +87,30 @@ const SocialFeed = () => {
         return <Instagram className="w-5 h-5" />;
       case 'linkedin':
         return <Linkedin className="w-5 h-5" />;
+      case 'tiktok':
+        return <Music className="w-5 h-5" />;
+      case 'behance':
+        return <Palette className="w-5 h-5" />;
       default:
         return <Share2 className="w-5 h-5" />;
     }
   };
 
   const getPlatformColor = (platform: string) => {
+    const socialMedia = activeSocialMedias.find(sm => sm.platform.toLowerCase() === platform);
+    if (socialMedia) {
+      return socialMedia.color;
+    }
+    
     switch (platform) {
       case 'instagram':
         return 'from-purple-600 to-pink-600';
       case 'linkedin':
         return 'from-blue-600 to-blue-800';
+      case 'tiktok':
+        return 'from-black to-gray-800';
+      case 'behance':
+        return 'from-blue-500 to-blue-600';
       default:
         return 'from-gray-600 to-gray-800';
     }
@@ -228,7 +214,7 @@ const SocialFeed = () => {
     </motion.div>
   );
 
-  if (isLoading) {
+  if (isLoading || socialLoading) {
     return (
       <section className="py-20 px-4 bg-vizualiza-bg-dark">
         <div className="max-w-6xl mx-auto">
@@ -236,6 +222,22 @@ const SocialFeed = () => {
             <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-vizualiza-purple mx-auto mb-4"></div>
             <p className="text-gray-400">Carregando feed social...</p>
           </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (activeSocialMedias.length === 0) {
+    return (
+      <section className="py-20 px-4 bg-vizualiza-bg-dark">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="text-white">Nossas </span>
+            <span className="bg-vizualiza-gradient bg-clip-text text-transparent">Redes Sociais</span>
+          </h2>
+          <p className="text-xl text-gray-300">
+            Nenhuma rede social configurada ainda.
+          </p>
         </div>
       </section>
     );
@@ -259,16 +261,19 @@ const SocialFeed = () => {
 
         <ScrollAnimation direction="up" delay={0.2}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto bg-white/5">
+            <TabsList className="grid w-full max-w-md mx-auto bg-white/5" style={{ gridTemplateColumns: `repeat(${Math.min(activeSocialMedias.length + 1, 4)}, 1fr)` }}>
               <TabsTrigger value="all" className="data-[state=active]:bg-vizualiza-purple">
                 Todos
               </TabsTrigger>
-              <TabsTrigger value="instagram" className="data-[state=active]:bg-vizualiza-purple">
-                Instagram
-              </TabsTrigger>
-              <TabsTrigger value="linkedin" className="data-[state=active]:bg-vizualiza-purple">
-                LinkedIn
-              </TabsTrigger>
+              {activeSocialMedias.slice(0, 3).map((social) => (
+                <TabsTrigger 
+                  key={social.id} 
+                  value={social.platform.toLowerCase()} 
+                  className="data-[state=active]:bg-vizualiza-purple"
+                >
+                  {social.platform}
+                </TabsTrigger>
+              ))}
             </TabsList>
           </Tabs>
         </ScrollAnimation>
@@ -295,21 +300,17 @@ const SocialFeed = () => {
         <ScrollAnimation direction="up" delay={0.4}>
           <div className="mt-16 text-center">
             <h3 className="text-2xl font-bold text-white mb-6">Siga-nos</h3>
-            <div className="flex justify-center gap-6">
-              <Button
-                onClick={() => window.open('https://instagram.com/vizualiza', '_blank')}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-              >
-                <Instagram className="w-5 h-5 mr-2" />
-                Instagram
-              </Button>
-              <Button
-                onClick={() => window.open('https://linkedin.com/company/vizualiza', '_blank')}
-                className="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900"
-              >
-                <Linkedin className="w-5 h-5 mr-2" />
-                LinkedIn
-              </Button>
+            <div className="flex flex-wrap justify-center gap-4">
+              {activeSocialMedias.map((social) => (
+                <Button
+                  key={social.id}
+                  onClick={() => window.open(social.url, '_blank')}
+                  className={`bg-gradient-to-r ${social.color} hover:opacity-80`}
+                >
+                  {getPlatformIcon(social.platform.toLowerCase())}
+                  <span className="ml-2">{social.platform}</span>
+                </Button>
+              ))}
             </div>
           </div>
         </ScrollAnimation>

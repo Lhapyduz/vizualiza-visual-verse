@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { X, Plus, Briefcase, BookOpen } from 'lucide-react';
+import { X, Plus, Briefcase, BookOpen, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useProjects, Project } from '@/hooks/useProjects';
@@ -9,6 +9,7 @@ import ProjectForm, { ProjectFormData } from './admin/ProjectForm';
 import BlogForm, { BlogFormData } from './admin/BlogForm';
 import ProjectList from './admin/ProjectList';
 import BlogList from './admin/BlogList';
+import CategoryManager from './admin/CategoryManager';
 
 interface AdminPanelProps {
   onClose: () => void;
@@ -25,7 +26,7 @@ const AdminPanel = ({
   onClearEditingProject, 
   onClearEditingPost 
 }: AdminPanelProps) => {
-  const [activeTab, setActiveTab] = useState<'projects' | 'posts'>('projects');
+  const [activeTab, setActiveTab] = useState<'projects' | 'posts' | 'categories'>('projects');
   const [editingProjectState, setEditingProjectState] = useState<Project | null>(null);
   const [editingPostState, setEditingPostState] = useState<BlogPost | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -179,6 +180,17 @@ const AdminPanel = ({
             <BookOpen className="w-4 h-4 mr-2" />
             Blog Posts
           </Button>
+          <Button
+            onClick={() => setActiveTab('categories')}
+            variant={activeTab === 'categories' ? 'default' : 'outline'}
+            className={activeTab === 'categories' 
+              ? 'bg-vizualiza-purple hover:bg-vizualiza-purple-dark' 
+              : 'border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white'
+            }
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Categorias
+          </Button>
         </div>
 
         {/* Projects Tab */}
@@ -258,6 +270,14 @@ const AdminPanel = ({
               onDelete={deletePost}
               isDeleting={isDeletingPost}
             />
+          </div>
+        )}
+
+        {/* Categories Tab */}
+        {activeTab === 'categories' && (
+          <div className="grid lg:grid-cols-2 gap-8">
+            <CategoryManager type="project" />
+            <CategoryManager type="blog" />
           </div>
         )}
       </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +42,15 @@ const BlogForm = ({ onSubmit, onCancel, editingPost, isLoading = false }: BlogFo
   });
 
   const { categories } = useCategories('blog');
-  const { uploadImage, isUploading } = useImageUpload();
+  const { uploadFiles, uploading } = useImageUpload({
+    bucket: 'blog-images',
+    maxFiles: 1,
+    onSuccess: (urls) => {
+      if (urls.length > 0) {
+        setFormData(prev => ({ ...prev, image: urls[0] }));
+      }
+    }
+  });
 
   useEffect(() => {
     if (editingPost) {
@@ -66,12 +73,9 @@ const BlogForm = ({ onSubmit, onCancel, editingPost, isLoading = false }: BlogFo
     onSubmit(formData);
   };
 
-  const handleImageUpload = async (file: File) => {
-    try {
-      const imageUrl = await uploadImage(file);
-      setFormData(prev => ({ ...prev, image: imageUrl }));
-    } catch (error) {
-      console.error('Error uploading image:', error);
+  const handleImageUpload = async (images: string[]) => {
+    if (images.length > 0) {
+      setFormData(prev => ({ ...prev, image: images[0] }));
     }
   };
 
@@ -172,10 +176,10 @@ const BlogForm = ({ onSubmit, onCancel, editingPost, isLoading = false }: BlogFo
       <div>
         <label className="block text-sm font-medium text-white mb-2">Imagem</label>
         <ImageUpload 
-          onImageUpload={handleImageUpload}
-          currentImage={formData.image}
-          onRemoveImage={() => setFormData(prev => ({ ...prev, image: '' }))}
-          isUploading={isUploading}
+          onImagesSelected={handleImageUpload}
+          maxImages={1}
+          existingImages={formData.image ? [formData.image] : []}
+          bucket="blog-images"
         />
       </div>
 

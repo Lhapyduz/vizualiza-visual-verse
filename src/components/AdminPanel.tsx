@@ -93,10 +93,23 @@ const AdminPanel = ({
   const handlePostSubmit = (data: BlogFormData) => {
     console.log('Submitting post data:', data);
 
+    // Map BlogFormData to the expected format
+    const postData = {
+      title: data.title,
+      excerpt: data.excerpt,
+      content: data.content,
+      category: data.category,
+      author: data.author,
+      read_time: data.readTime, // Convert readTime to read_time
+      tags: data.tags,
+      featured_image: data.image,
+      date: data.date
+    };
+
     if (editingPostState) {
-      updatePost({ id: editingPostState.id, ...data });
+      updatePost({ id: editingPostState.id, ...postData });
     } else {
-      createPost(data);
+      createPost(postData);
     }
 
     resetPostForm();

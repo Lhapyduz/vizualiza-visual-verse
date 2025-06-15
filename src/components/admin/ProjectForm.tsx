@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,7 +38,16 @@ const ProjectForm = ({ onSubmit, onCancel, editingProject, isLoading = false }: 
   });
 
   const { categories } = useCategories('project');
-  const { uploadImage, isUploading } = useImageUpload();
+  const { uploadFiles, uploading } = useImageUpload({
+    bucket: 'project-images',
+    maxFiles: 10,
+    onSuccess: (urls) => {
+      setFormData(prev => ({ 
+        ...prev, 
+        images: [...(prev.images || []), ...urls] 
+      }));
+    }
+  });
 
   useEffect(() => {
     if (editingProject) {
@@ -60,27 +68,14 @@ const ProjectForm = ({ onSubmit, onCancel, editingProject, isLoading = false }: 
     onSubmit(formData);
   };
 
-  const handleImageUpload = async (file: File, isFeatured: boolean = false) => {
-    try {
-      const imageUrl = await uploadImage(file);
-      if (isFeatured) {
-        setFormData(prev => ({ ...prev, featured_image: imageUrl }));
-      } else {
-        setFormData(prev => ({ 
-          ...prev, 
-          images: [...(prev.images || []), imageUrl] 
-        }));
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error);
+  const handleFeaturedImageUpload = (images: string[]) => {
+    if (images.length > 0) {
+      setFormData(prev => ({ ...prev, featured_image: images[0] }));
     }
   };
 
-  const removeImage = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images?.filter((_, i) => i !== index) || []
-    }));
+  const handleAdditionalImagesUpload = (images: string[]) => {
+    setFormData(prev => ({ ...prev, images }));
   };
 
   return (
@@ -145,41 +140,21 @@ const ProjectForm = ({ onSubmit, onCancel, editingProject, isLoading = false }: 
       <div>
         <label className="block text-sm font-medium text-white mb-2">Imagem Principal</label>
         <ImageUpload 
-          onImageUpload={(file) => handleImageUpload(file, true)}
-          currentImage={formData.featured_image}
-          onRemoveImage={() => setFormData(prev => ({ ...prev, featured_image: '' }))}
-          isUploading={isUploading}
+          onImagesSelected={handleFeaturedImageUpload}
+          maxImages={1}
+          existingImages={formData.featured_image ? [formData.featured_image] : []}
+          bucket="project-images"
         />
       </div>
 
       <div>
         <label className="block text-sm font-medium text-white mb-2">Imagens Adicionais</label>
         <ImageUpload 
-          onImageUpload={(file) => handleImageUpload(file, false)}
-          isUploading={isUploading}
-          multiple
+          onImagesSelected={handleAdditionalImagesUpload}
+          maxImages={9}
+          existingImages={formData.images || []}
+          bucket="project-images"
         />
-        
-        {formData.images && formData.images.length > 0 && (
-          <div className="grid grid-cols-3 gap-4 mt-4">
-            {formData.images.map((image, index) => (
-              <div key={index} className="relative group">
-                <img 
-                  src={image} 
-                  alt={`Preview ${index + 1}`} 
-                  className="w-full h-24 object-cover rounded-lg" 
-                />
-                <Button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="absolute -top-2 -right-2 w-6 h-6 p-0 bg-red-500 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  ×
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       <div className="flex gap-4">

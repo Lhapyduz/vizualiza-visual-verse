@@ -16,10 +16,10 @@ interface ProjectModalProps {
 const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: ProjectModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
+  // Only use actual project images, no placeholder images
   const projectImages = [
-    project.featured_image || project.image,
-    'https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&h=600&fit=crop',
-    'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=600&fit=crop'
+    project.featured_image,
+    ...(project.images?.map(img => img.image_url) || [])
   ].filter(Boolean);
 
   const nextImage = () => {
@@ -86,65 +86,67 @@ const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: Pro
 
         {/* Content Grid */}
         <div className="grid lg:grid-cols-2 gap-8 px-8 pb-8 max-h-[calc(95vh-140px)] overflow-y-auto">
-          {/* Image Gallery Section */}
-          <div className="space-y-6">
-            <div className="relative group">
-              <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-gray-900">
-                <ImageZoom
-                  src={projectImages[currentImageIndex]}
-                  alt={`${project.title} - ${currentImageIndex + 1}`}
-                  className="w-full h-full"
-                />
+          {/* Image Gallery Section - Only show if there are images */}
+          {projectImages.length > 0 && (
+            <div className="space-y-6">
+              <div className="relative group">
+                <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-gray-900">
+                  <ImageZoom
+                    src={projectImages[currentImageIndex]}
+                    alt={`${project.title} - ${currentImageIndex + 1}`}
+                    className="w-full h-full"
+                  />
+                </div>
+                
+                {projectImages.length > 1 && (
+                  <>
+                    <Button
+                      onClick={prevImage}
+                      variant="outline"
+                      size="icon"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/60 border-white/20 hover:bg-black/80 backdrop-blur-sm"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </Button>
+                    <Button
+                      onClick={nextImage}
+                      variant="outline"
+                      size="icon"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/60 border-white/20 hover:bg-black/80 backdrop-blur-sm"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </Button>
+                  </>
+                )}
               </div>
-              
+
+              {/* Thumbnails */}
               {projectImages.length > 1 && (
-                <>
-                  <Button
-                    onClick={prevImage}
-                    variant="outline"
-                    size="icon"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/60 border-white/20 hover:bg-black/80 backdrop-blur-sm"
-                  >
-                    <ChevronLeft className="w-5 h-5" />
-                  </Button>
-                  <Button
-                    onClick={nextImage}
-                    variant="outline"
-                    size="icon"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/60 border-white/20 hover:bg-black/80 backdrop-blur-sm"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </Button>
-                </>
+                <div className="flex gap-3 overflow-x-auto pb-2">
+                  {projectImages.map((img, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentImageIndex(index)}
+                      className={`flex-shrink-0 w-20 h-16 rounded-lg border-2 transition-all duration-300 overflow-hidden ${
+                        currentImageIndex === index
+                          ? 'border-vizualiza-purple shadow-lg shadow-vizualiza-purple/20'
+                          : 'border-white/10 hover:border-white/30'
+                      }`}
+                    >
+                      <img
+                        src={img}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-
-            {/* Thumbnails */}
-            {projectImages.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {projectImages.map((img, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setCurrentImageIndex(index)}
-                    className={`flex-shrink-0 w-20 h-16 rounded-lg border-2 transition-all duration-300 overflow-hidden ${
-                      currentImageIndex === index
-                        ? 'border-vizualiza-purple shadow-lg shadow-vizualiza-purple/20'
-                        : 'border-white/10 hover:border-white/30'
-                    }`}
-                  >
-                    <img
-                      src={img}
-                      alt={`Thumbnail ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          )}
 
           {/* Project Details Section */}
-          <div className="space-y-8">
+          <div className={`space-y-8 ${projectImages.length === 0 ? 'lg:col-span-2' : ''}`}>
             {/* About Section */}
             <div>
               <h2 className="text-2xl font-bold text-white mb-4">Sobre o Projeto</h2>
@@ -153,44 +155,23 @@ const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: Pro
               </p>
             </div>
 
-            {/* Technologies Section */}
-            <div>
-              <h3 className="text-xl font-bold text-white mb-4">Tecnologias e Ferramentas</h3>
-              <div className="flex flex-wrap gap-3">
-                {project.tags && project.tags.map((tag, index) => (
-                  <span
-                    key={index}
-                    className="inline-flex items-center px-4 py-2 bg-vizualiza-orange/10 text-vizualiza-orange text-sm rounded-full border border-vizualiza-orange/20 hover:bg-vizualiza-orange/20 transition-colors duration-300"
-                  >
-                    <Tag className="w-3 h-3 mr-2" />
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Results Section */}
-            <div>
-              <h3 className="text-xl font-bold text-white mb-4">Resultados</h3>
-              <div className="space-y-3">
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-vizualiza-purple rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <p className="text-gray-300">Aumento de 40% no reconhecimento da marca</p>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-vizualiza-purple rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <p className="text-gray-300">Melhoria na percepção visual da empresa</p>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-vizualiza-purple rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <p className="text-gray-300">Maior engajamento nas redes sociais</p>
-                </div>
-                <div className="flex items-start">
-                  <div className="w-2 h-2 bg-vizualiza-purple rounded-full mt-2 mr-3 flex-shrink-0"></div>
-                  <p className="text-gray-300">Identidade visual coesa em todos os pontos de contato</p>
+            {/* Technologies Section - Only show if there are tags */}
+            {project.tags && project.tags.length > 0 && (
+              <div>
+                <h3 className="text-xl font-bold text-white mb-4">Tecnologias e Ferramentas</h3>
+                <div className="flex flex-wrap gap-3">
+                  {project.tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center px-4 py-2 bg-vizualiza-orange/10 text-vizualiza-orange text-sm rounded-full border border-vizualiza-orange/20 hover:bg-vizualiza-orange/20 transition-colors duration-300"
+                    >
+                      <Tag className="w-3 h-3 mr-2" />
+                      {tag}
+                    </span>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

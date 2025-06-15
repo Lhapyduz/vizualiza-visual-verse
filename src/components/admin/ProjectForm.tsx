@@ -39,12 +39,13 @@ const ProjectForm = ({ onSubmit, onCancel, editingProject, isLoading = false }: 
 
   useEffect(() => {
     if (editingProject) {
+      // Only populate when editing an existing project
       setFormData({
         title: editingProject.title,
         description: editingProject.description,
         category: editingProject.category,
         date: editingProject.date,
-        tags: editingProject.tags
+        tags: editingProject.tags || []
       });
       
       const projectImages = editingProject.images?.map(img => img.image_url) || [];
@@ -52,6 +53,16 @@ const ProjectForm = ({ onSubmit, onCancel, editingProject, isLoading = false }: 
         projectImages.unshift(editingProject.featured_image);
       }
       setImages([...new Set(projectImages)]);
+    } else {
+      // Reset form when creating new project
+      setFormData({
+        title: '',
+        description: '',
+        category: '',
+        date: new Date().toISOString().split('T')[0],
+        tags: []
+      });
+      setImages([]);
     }
   }, [editingProject]);
 
@@ -95,7 +106,7 @@ const ProjectForm = ({ onSubmit, onCancel, editingProject, isLoading = false }: 
         value={formData.description}
         onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
         required
-        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 min-h-[120px]"
       />
 
       <div>

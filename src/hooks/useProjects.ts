@@ -33,6 +33,7 @@ interface CreateProjectData {
   date: string;
   tags: string[];
   featured_image?: string;
+  image: string; // Add the image property
   images?: string[];
 }
 

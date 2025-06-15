@@ -1,4 +1,3 @@
-
 import Hero from '@/components/Hero';
 import Navbar from '@/components/Navbar';
 import Portfolio from '@/components/Portfolio';
@@ -16,7 +15,6 @@ import VoiceCommands from '@/components/VoiceCommands';
 import Blog from '@/components/Blog';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import SEOHead from '@/components/SEOHead';
-import SocialFeed from '@/components/SocialFeed';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';

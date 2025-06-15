@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, FolderOpen, FileText, Tag, BarChart3, Share2 } from 'lucide-react';
@@ -63,7 +62,7 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
       case 'projects':
         return editingProject ? (
           <ProjectForm
-            project={editingProject}
+            editingProject={editingProject}
             onCancel={onClearEditingProject}
           />
         ) : (
@@ -77,7 +76,7 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
       case 'blog':
         return editingPost ? (
           <BlogForm
-            post={editingPost}
+            editingPost={editingPost}
             onCancel={onClearEditingPost}
           />
         ) : (

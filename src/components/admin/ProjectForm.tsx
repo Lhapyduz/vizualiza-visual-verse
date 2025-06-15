@@ -1,20 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCategories } from '@/hooks/useCategories';
+import { useImageUpload } from '@/hooks/useImageUpload';
+import ImageUpload from '@/components/ImageUpload';
+import TagManager from '@/components/TagManager';
 import { Project } from '@/hooks/useProjects';
-import ImageUpload from '../ImageUpload';
-
-interface ProjectFormProps {
-  onSubmit: (data: ProjectFormData) => void;
-  onCancel: () => void;
-  editingProject?: Project | null;
-  isLoading?: boolean;
-}
 
 export interface ProjectFormData {
   title: string;
@@ -26,162 +20,181 @@ export interface ProjectFormData {
   images?: string[];
 }
 
+interface ProjectFormProps {
+  onSubmit: (data: ProjectFormData) => void;
+  onCancel: () => void;
+  editingProject?: Project | null;
+  isLoading?: boolean;
+}
+
 const ProjectForm = ({ onSubmit, onCancel, editingProject, isLoading = false }: ProjectFormProps) => {
-  const { categories } = useCategories('project');
-  const [images, setImages] = useState<string[]>([]);
   const [formData, setFormData] = useState<ProjectFormData>({
     title: '',
     description: '',
     category: '',
     date: new Date().toISOString().split('T')[0],
-    tags: []
+    tags: [],
+    featured_image: '',
+    images: []
   });
+
+  const { categories } = useCategories('project');
+  const { uploadImage, isUploading } = useImageUpload();
 
   useEffect(() => {
     if (editingProject) {
-      // Only populate when editing an existing project
       setFormData({
         title: editingProject.title,
         description: editingProject.description,
         category: editingProject.category,
         date: editingProject.date,
-        tags: editingProject.tags || []
+        tags: editingProject.tags || [],
+        featured_image: editingProject.featured_image || '',
+        images: editingProject.images?.map(img => img.image_url) || []
       });
-      
-      // Fix: Properly handle images without duplication
-      const projectImages: string[] = [];
-      
-      // Add featured image if it exists
-      if (editingProject.featured_image) {
-        projectImages.push(editingProject.featured_image);
-      }
-      
-      // Add additional images if they exist, but avoid duplicating the featured image
-      if (editingProject.images && editingProject.images.length > 0) {
-        editingProject.images.forEach(img => {
-          const imageUrl = img.image_url;
-          // Only add if it's not already in the array (avoid duplicating featured image)
-          if (!projectImages.includes(imageUrl)) {
-            projectImages.push(imageUrl);
-          }
-        });
-      }
-      
-      setImages(projectImages);
-    } else {
-      // Reset form when creating new project
-      setFormData({
-        title: '',
-        description: '',
-        category: '',
-        date: new Date().toISOString().split('T')[0],
-        tags: []
-      });
-      setImages([]);
     }
   }, [editingProject]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const submitData = {
-      ...formData,
-      featured_image: images[0] || '',
-      images: images
-    };
-
-    onSubmit(submitData);
+    onSubmit(formData);
   };
 
-  const handleTagsChange = (value: string) => {
-    const tags = value
-      .replace(/,/g, ';')
-      .split(';')
-      .map(tag => tag.trim())
-      .filter(tag => tag !== '');
-    setFormData(prev => ({ ...prev, tags }));
+  const handleImageUpload = async (file: File, isFeatured: boolean = false) => {
+    try {
+      const imageUrl = await uploadImage(file);
+      if (isFeatured) {
+        setFormData(prev => ({ ...prev, featured_image: imageUrl }));
+      } else {
+        setFormData(prev => ({ 
+          ...prev, 
+          images: [...(prev.images || []), imageUrl] 
+        }));
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
   };
 
-  const handleImagesSelected = (selectedImages: string[]) => {
-    setImages(selectedImages);
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images?.filter((_, i) => i !== index) || []
+    }));
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Input
-        placeholder="Título do projeto"
-        value={formData.title}
-        onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-        required
-        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-      />
-
-      <Textarea
-        placeholder="Descrição do projeto"
-        value={formData.description}
-        onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-        required
-        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 min-h-[120px]"
-      />
-
       <div>
-        <label className="block text-sm font-medium text-white mb-3">
-          Imagens do Projeto
-        </label>
-        <ImageUpload
-          onImagesSelected={handleImagesSelected}
-          maxImages={5}
-          existingImages={images}
-          bucket="project-images"
+        <label className="block text-sm font-medium text-white mb-2">Título</label>
+        <Input
+          value={formData.title}
+          onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+          className="bg-white/5 border-white/20 text-white"
+          required
         />
       </div>
 
-      <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-        <SelectTrigger className="bg-white/10 border-white/20 text-white">
-          <SelectValue placeholder="Selecione uma categoria" />
-        </SelectTrigger>
-        <SelectContent>
-          {categories.map(category => (
-            <SelectItem key={category.id} value={category.name}>
-              {category.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div>
+        <label className="block text-sm font-medium text-white mb-2">Descrição</label>
+        <Textarea
+          value={formData.description}
+          onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+          className="bg-white/5 border-white/20 text-white min-h-[100px]"
+          required
+        />
+      </div>
 
-      <Input
-        type="date"
-        value={formData.date}
-        onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-        required
-        className="bg-white/10 border-white/20 text-white"
-      />
-
-      <Input
-        placeholder="Tags (separadas por vírgula ou ponto e vírgula)"
-        value={formData.tags.join('; ')}
-        onChange={(e) => handleTagsChange(e.target.value)}
-        className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-      />
-
-      <div className="flex space-x-4">
-        <Button 
-          type="submit"
-          disabled={isLoading}
-          className="flex-1 bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
+      <div>
+        <label className="block text-sm font-medium text-white mb-2">Categoria</label>
+        <Select 
+          value={formData.category} 
+          onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
         >
-          {isLoading ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <Save className="w-4 h-4 mr-2" />
-          )}
-          {editingProject ? 'Atualizar' : 'Criar'}
+          <SelectTrigger className="bg-white/5 border-white/20 text-white">
+            <SelectValue placeholder="Selecione uma categoria" />
+          </SelectTrigger>
+          <SelectContent className="bg-vizualiza-bg-dark border-white/20">
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.name} className="text-white hover:bg-white/10">
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-white mb-2">Data</label>
+        <Input
+          type="date"
+          value={formData.date}
+          onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+          className="bg-white/5 border-white/20 text-white"
+          required
+        />
+      </div>
+
+      <TagManager
+        tags={formData.tags}
+        onChange={(tags) => setFormData(prev => ({ ...prev, tags }))}
+        placeholder="Digite uma tag..."
+        maxTags={8}
+      />
+
+      <div>
+        <label className="block text-sm font-medium text-white mb-2">Imagem Principal</label>
+        <ImageUpload 
+          onImageUpload={(file) => handleImageUpload(file, true)}
+          currentImage={formData.featured_image}
+          onRemoveImage={() => setFormData(prev => ({ ...prev, featured_image: '' }))}
+          isUploading={isUploading}
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-white mb-2">Imagens Adicionais</label>
+        <ImageUpload 
+          onImageUpload={(file) => handleImageUpload(file, false)}
+          isUploading={isUploading}
+          multiple
+        />
+        
+        {formData.images && formData.images.length > 0 && (
+          <div className="grid grid-cols-3 gap-4 mt-4">
+            {formData.images.map((image, index) => (
+              <div key={index} className="relative group">
+                <img 
+                  src={image} 
+                  alt={`Preview ${index + 1}`} 
+                  className="w-full h-24 object-cover rounded-lg" 
+                />
+                <Button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute -top-2 -right-2 w-6 h-6 p-0 bg-red-500 hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  ×
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-4">
+        <Button 
+          type="submit" 
+          disabled={isLoading}
+          className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
+        >
+          {isLoading ? 'Salvando...' : editingProject ? 'Atualizar' : 'Criar'}
         </Button>
         <Button 
-          type="button"
+          type="button" 
+          variant="outline" 
           onClick={onCancel}
-          variant="outline"
-          className="border-gray-600 text-gray-400 hover:bg-gray-600 hover:text-white"
+          className="border-white/20 text-white hover:bg-white/10"
         >
           Cancelar
         </Button>

@@ -130,18 +130,6 @@ const BlogModal: React.FC<BlogModalProps> = ({
                 <p className="text-gray-300 leading-relaxed">
                   {post.content}
                 </p>
-                
-                {/* Extended content placeholder */}
-                <p className="text-gray-300 leading-relaxed mt-6">
-                  Este é um conteúdo de exemplo. Em um blog real, aqui estaria o texto completo do artigo, 
-                  formatado com títulos, parágrafos, listas e outros elementos de conteúdo.
-                </p>
-                
-                <p className="text-gray-300 leading-relaxed mt-6">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt 
-                  ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation 
-                  ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                </p>
               </div>
 
               {/* Tags */}

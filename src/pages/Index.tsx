@@ -1,4 +1,3 @@
-
 import Hero from '@/components/Hero';
 import Navbar from '@/components/Navbar';
 import Portfolio from '@/components/Portfolio';
@@ -15,6 +14,7 @@ import ChatBot from '@/components/ChatBot';
 import VoiceCommands from '@/components/VoiceCommands';
 import Blog from '@/components/Blog';
 import NewsletterSignup from '@/components/NewsletterSignup';
+import SEOHead from '@/components/SEOHead';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
@@ -113,53 +113,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-vizualiza-bg-dark text-white overflow-x-hidden relative">
-      <Helmet>
-        <title>Vizualiza Visual Verse | Design e Identidade Visual Profissional</title>
-        <meta name="description" content="Estúdio de design especializado em identidade visual, web design e branding. Criamos marcas memoráveis que convertem. Orçamento grátis!" />
-        <meta name="keywords" content="design, identidade visual, branding, web design, logo, marca, estúdio criativo, Guaratuba, Paraná" />
-        <meta property="og:title" content="Vizualiza Visual Verse | Design e Identidade Visual Profissional" />
-        <meta property="og:description" content="Transformamos sua marca com design profissional. Identidade visual, sites responsivos e branding completo. Solicite seu orçamento!" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://vizualiza.com.br" />
-        <meta property="og:image" content="https://vizualiza.com.br/og-image.jpg" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Vizualiza Visual Verse | Design e Identidade Visual" />
-        <meta name="twitter:description" content="Estúdio de design especializado em criar marcas memoráveis e sites que convertem." />
-        <meta name="twitter:image" content="https://vizualiza.com.br/og-image.jpg" />
-        <link rel="canonical" href="https://vizualiza.com.br" />
-        
-        {/* Schema.org structured data */}
-        <script type="application/ld+json">
-          {`
-            {
-              "@context": "https://schema.org",
-              "@type": "LocalBusiness",
-              "name": "Vizualiza Visual Verse",
-              "description": "Estúdio de design especializado em identidade visual, web design e branding",
-              "url": "https://vizualiza.com.br",
-              "telephone": "+5541995618116",
-              "email": "gregory@vizualiza.com.br",
-              "address": {
-                "@type": "PostalAddress",
-                "addressLocality": "Guaratuba",
-                "addressRegion": "PR",
-                "addressCountry": "BR"
-              },
-              "geo": {
-                "@type": "GeoCoordinates",
-                "latitude": -25.8826,
-                "longitude": -48.5739
-              },
-              "openingHours": "Mo-Su 00:00-23:59",
-              "priceRange": "R$ 400 - R$ 5000",
-              "serviceArea": {
-                "@type": "State",
-                "name": "Paraná"
-              }
-            }
-          `}
-        </script>
-      </Helmet>
+      <SEOHead />
       
       <CustomCursor />
       <VoiceCommands />
@@ -209,6 +163,7 @@ const Index = () => {
             isAdmin={isAdminLoggedIn}
             onEditPost={handleEditPost}
           />
+          <SocialFeed />
           <div className="py-20 px-4 bg-vizualiza-bg-dark">
             <div className="max-w-4xl mx-auto">
               <NewsletterSignup />

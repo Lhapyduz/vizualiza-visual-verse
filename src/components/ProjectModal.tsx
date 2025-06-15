@@ -3,16 +3,7 @@ import { useState } from 'react';
 import { X, Calendar, Tag, ExternalLink, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ImageZoom from './ImageZoom';
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  category: string;
-  date: string;
-  tags: string[];
-}
+import { Project } from '@/hooks/useProjects';
 
 interface ProjectModalProps {
   project: Project;
@@ -25,12 +16,11 @@ interface ProjectModalProps {
 const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: ProjectModalProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
-  // Para demonstração, vou usar algumas imagens relacionadas ao projeto
   const projectImages = [
-    project.image,
+    project.featured_image || project.image,
     'https://images.unsplash.com/photo-1558655146-d09347e92766?w=800&h=600&fit=crop',
     'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=600&fit=crop'
-  ];
+  ].filter(Boolean);
 
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % projectImages.length);
@@ -51,34 +41,34 @@ const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: Pro
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={onClose} // Fecha o modal ao clicar fora
+      className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={onClose}
     >
       <div
-        className="bg-vizualiza-bg-dark border border-white/10 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden animate-scale-in"
-        onClick={(e) => e.stopPropagation()} // Impede que o clique dentro do modal feche-o
+        className="bg-vizualiza-bg-dark border border-white/10 rounded-3xl max-w-6xl w-full max-h-[95vh] overflow-hidden animate-scale-in"
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/10">
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-2">{project.title}</h2>
-            <div className="flex items-center gap-4 text-sm text-gray-400">
-              <span className="inline-flex items-center px-3 py-1 bg-vizualiza-purple/20 text-vizualiza-purple rounded-full">
+        <div className="flex items-start justify-between p-8 pb-6">
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold text-white mb-4">{project.title}</h1>
+            <div className="flex items-center gap-6">
+              <span className="inline-flex items-center px-4 py-2 bg-vizualiza-purple/20 text-vizualiza-purple rounded-full text-sm font-medium border border-vizualiza-purple/30">
                 {project.category}
               </span>
-              <div className="flex items-center">
-                <Calendar className="w-4 h-4 mr-1" />
+              <div className="flex items-center text-gray-400 text-sm">
+                <Calendar className="w-4 h-4 mr-2" />
                 {new Date(project.date).toLocaleDateString('pt-BR')}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {isAdmin && (
               <Button
                 onClick={handleEdit}
                 variant="outline"
                 size="icon"
-                className="border-vizualiza-orange text-vizualiza-orange hover:bg-vizualiza-orange hover:text-white"
+                className="border-vizualiza-orange text-vizualiza-orange hover:bg-vizualiza-orange hover:text-white transition-all duration-300"
               >
                 <Edit className="w-5 h-5" />
               </Button>
@@ -87,23 +77,25 @@ const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: Pro
               onClick={onClose}
               variant="outline"
               size="icon"
-              className="border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white"
+              className="border-white/20 text-white hover:bg-white/10 transition-all duration-300"
             >
               <X className="w-5 h-5" />
             </Button>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="grid md:grid-cols-2 gap-6 p-6 max-h-[calc(90vh-120px)] overflow-y-auto">
-          {/* Image Gallery */}
-          <div className="space-y-4">
+        {/* Content Grid */}
+        <div className="grid lg:grid-cols-2 gap-8 px-8 pb-8 max-h-[calc(95vh-140px)] overflow-y-auto">
+          {/* Image Gallery Section */}
+          <div className="space-y-6">
             <div className="relative group">
-              <ImageZoom
-                src={projectImages[currentImageIndex]}
-                alt={`${project.title} - ${currentImageIndex + 1}`}
-                className="w-full h-80 rounded-lg overflow-hidden"
-              />
+              <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-gray-900">
+                <ImageZoom
+                  src={projectImages[currentImageIndex]}
+                  alt={`${project.title} - ${currentImageIndex + 1}`}
+                  className="w-full h-full"
+                />
+              </div>
               
               {projectImages.length > 1 && (
                 <>
@@ -111,39 +103,39 @@ const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: Pro
                     onClick={prevImage}
                     variant="outline"
                     size="icon"
-                    className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 border-white/20 hover:bg-black/70"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/60 border-white/20 hover:bg-black/80 backdrop-blur-sm"
                   >
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="w-5 h-5" />
                   </Button>
                   <Button
                     onClick={nextImage}
                     variant="outline"
                     size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 border-white/20 hover:bg-black/70"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/60 border-white/20 hover:bg-black/80 backdrop-blur-sm"
                   >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-5 h-5" />
                   </Button>
                 </>
               )}
             </div>
 
-            {/* Image Thumbnails */}
+            {/* Thumbnails */}
             {projectImages.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto">
+              <div className="flex gap-3 overflow-x-auto pb-2">
                 {projectImages.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`flex-shrink-0 w-16 h-16 rounded border-2 transition-all overflow-hidden ${
+                    className={`flex-shrink-0 w-20 h-16 rounded-lg border-2 transition-all duration-300 overflow-hidden ${
                       currentImageIndex === index
-                        ? 'border-vizualiza-purple'
-                        : 'border-white/20 hover:border-white/40'
+                        ? 'border-vizualiza-purple shadow-lg shadow-vizualiza-purple/20'
+                        : 'border-white/10 hover:border-white/30'
                     }`}
                   >
-                    <ImageZoom
+                    <img
                       src={img}
                       alt={`Thumbnail ${index + 1}`}
-                      className="w-full h-full"
+                      className="w-full h-full object-cover"
                     />
                   </button>
                 ))}
@@ -151,59 +143,65 @@ const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: Pro
             )}
           </div>
 
-          {/* Project Details */}
-          <div className="space-y-6">
+          {/* Project Details Section */}
+          <div className="space-y-8">
+            {/* About Section */}
             <div>
-              <h3 className="text-xl font-semibold text-white mb-3">Sobre o Projeto</h3>
-              <p className="text-gray-300 leading-relaxed mb-4">
+              <h2 className="text-2xl font-bold text-white mb-4">Sobre o Projeto</h2>
+              <p className="text-gray-300 leading-relaxed text-lg">
                 {project.description}
-              </p>
-              <p className="text-gray-300 leading-relaxed">
-                Este projeto foi desenvolvido com foco na criação de uma identidade visual única e impactante. 
-                Utilizamos as melhores práticas de design para garantir que a marca se destaque no mercado 
-                e comunique efetivamente os valores da empresa.
               </p>
             </div>
 
+            {/* Technologies Section */}
             <div>
-              <h4 className="text-lg font-semibold text-white mb-3">Tecnologias e Ferramentas</h4>
-              <div className="flex flex-wrap gap-2">
-                {project.tags.map((tag) => (
+              <h3 className="text-xl font-bold text-white mb-4">Tecnologias e Ferramentas</h3>
+              <div className="flex flex-wrap gap-3">
+                {project.tags && project.tags.map((tag, index) => (
                   <span
-                    key={tag}
-                    className="inline-flex items-center px-3 py-1 bg-vizualiza-orange/20 text-vizualiza-orange text-sm rounded-full"
+                    key={index}
+                    className="inline-flex items-center px-4 py-2 bg-vizualiza-orange/10 text-vizualiza-orange text-sm rounded-full border border-vizualiza-orange/20 hover:bg-vizualiza-orange/20 transition-colors duration-300"
                   >
-                    <Tag className="w-3 h-3 mr-1" />
+                    <Tag className="w-3 h-3 mr-2" />
                     {tag}
                   </span>
                 ))}
-                <span className="inline-flex items-center px-3 py-1 bg-vizualiza-orange/20 text-vizualiza-orange text-sm rounded-full">
-                  <Tag className="w-3 h-3 mr-1" />
-                  Adobe Illustrator
-                </span>
-                <span className="inline-flex items-center px-3 py-1 bg-vizualiza-orange/20 text-vizualiza-orange text-sm rounded-full">
-                  <Tag className="w-3 h-3 mr-1" />
-                  Photoshop
-                </span>
               </div>
             </div>
 
+            {/* Results Section */}
             <div>
-              <h4 className="text-lg font-semibold text-white mb-3">Resultados</h4>
-              <ul className="text-gray-300 space-y-2">
-                <li>• Aumento de 40% no reconhecimento da marca</li>
-                <li>• Melhoria na percepção visual da empresa</li>
-                <li>• Maior engajamento nas redes sociais</li>
-                <li>• Identidade visual coesa em todos os pontos de contato</li>
-              </ul>
+              <h3 className="text-xl font-bold text-white mb-4">Resultados</h3>
+              <div className="space-y-3">
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-vizualiza-purple rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <p className="text-gray-300">Aumento de 40% no reconhecimento da marca</p>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-vizualiza-purple rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <p className="text-gray-300">Melhoria na percepção visual da empresa</p>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-vizualiza-purple rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <p className="text-gray-300">Maior engajamento nas redes sociais</p>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-2 h-2 bg-vizualiza-purple rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                  <p className="text-gray-300">Identidade visual coesa em todos os pontos de contato</p>
+                </div>
+              </div>
             </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark text-white">
-                <ExternalLink className="w-4 h-4 mr-2" />
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-6">
+              <Button className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark text-white px-8 py-3 rounded-full text-base font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center">
+                <ExternalLink className="w-5 h-5 mr-2" />
                 Ver Projeto Completo
               </Button>
-              <Button variant="outline" className="border-vizualiza-orange text-vizualiza-orange hover:bg-vizualiza-orange hover:text-white">
+              <Button 
+                variant="outline" 
+                className="border-vizualiza-orange text-vizualiza-orange hover:bg-vizualiza-orange hover:text-white px-8 py-3 rounded-full text-base font-medium transition-all duration-300 hover:scale-105"
+              >
                 Solicitar Orçamento
               </Button>
             </div>

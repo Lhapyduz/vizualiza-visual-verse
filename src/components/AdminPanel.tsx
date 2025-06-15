@@ -9,8 +9,8 @@ import BlogList from './admin/BlogList';
 import BlogForm from './admin/BlogForm';
 import CategoryManager from './admin/CategoryManager';
 import Analytics from './admin/Analytics';
-import { Project } from '@/hooks/useProjects';
-import { BlogPost } from '@/hooks/useBlogPosts';
+import { Project, useProjects } from '@/hooks/useProjects';
+import { BlogPost, useBlogPosts } from '@/hooks/useBlogPosts';
 import SocialMediaManager from './admin/SocialMediaManager';
 
 interface AdminPanelProps {
@@ -28,6 +28,10 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
     return 'projects';
   });
 
+  // Get projects and blog posts data
+  const { projects, deleteProject, isDeleting: isDeletingProject } = useProjects();
+  const { posts, deletePost, isDeleting: isDeletingPost } = useBlogPosts();
+
   const tabs = [
     { id: 'projects', label: 'Projetos', icon: FolderOpen },
     { id: 'blog', label: 'Blog', icon: FileText },
@@ -44,29 +48,45 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
     }
   }, [editingProject, editingPost]);
 
+  const handleEditProject = (project: Project) => {
+    // This would be handled by the parent component
+    console.log('Edit project:', project);
+  };
+
+  const handleEditPost = (post: BlogPost) => {
+    // This would be handled by the parent component
+    console.log('Edit post:', post);
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'projects':
         return editingProject ? (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Editar Projeto</h3>
-            <div className="text-gray-400">
-              Funcionalidade de edição será implementada em breve.
-            </div>
-          </div>
+          <ProjectForm
+            project={editingProject}
+            onCancel={onClearEditingProject}
+          />
         ) : (
-          <ProjectList />
+          <ProjectList
+            projects={projects}
+            onEdit={handleEditProject}
+            onDelete={deleteProject}
+            isDeleting={isDeletingProject}
+          />
         );
       case 'blog':
         return editingPost ? (
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-white">Editar Post</h3>
-            <div className="text-gray-400">
-              Funcionalidade de edição será implementada em breve.
-            </div>
-          </div>
+          <BlogForm
+            post={editingPost}
+            onCancel={onClearEditingPost}
+          />
         ) : (
-          <BlogList />
+          <BlogList
+            posts={posts}
+            onEdit={handleEditPost}
+            onDelete={deletePost}
+            isDeleting={isDeletingPost}
+          />
         );
       case 'categories':
         return <CategoryManager type="project" />;
@@ -75,7 +95,14 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
       case 'analytics':
         return <Analytics />;
       default:
-        return <ProjectList />;
+        return (
+          <ProjectList
+            projects={projects}
+            onEdit={handleEditProject}
+            onDelete={deleteProject}
+            isDeleting={isDeletingProject}
+          />
+        );
     }
   };
 

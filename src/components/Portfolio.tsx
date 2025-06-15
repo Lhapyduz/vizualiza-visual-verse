@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import { ExternalLink, Calendar, Tag } from 'lucide-react';
@@ -8,16 +8,8 @@ import ProjectModal from './ProjectModal';
 import AdvancedSearch from './AdvancedSearch';
 import ScrollAnimation from './ScrollAnimation';
 import { motion } from 'framer-motion';
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  category: string;
-  date: string;
-  tags: string[];
-}
+import { useProjects, Project } from '@/hooks/useProjects';
+import { useCategories } from '@/hooks/useCategories';
 
 interface PortfolioProps {
   isAdmin?: boolean;
@@ -32,7 +24,8 @@ interface SearchFilters {
 }
 
 const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const { projects, isLoading } = useProjects();
+  const { categories } = useCategories('project');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,7 +36,7 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
     tags: []
   });
 
-  const categories = ['Todos', 'Identidade Visual', 'Design Gráfico', 'Fotografia', 'Web Design'];
+  const categoryOptions = ['Todos', ...categories.map(cat => cat.name)];
 
   const openProjectModal = (project: Project) => {
     setSelectedProject(project);
@@ -54,55 +47,6 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
     setIsModalOpen(false);
     setSelectedProject(null);
   };
-
-  useEffect(() => {
-    // Projetos de exemplo
-    const sampleProjects: Project[] = [
-      {
-        id: '1',
-        title: 'Identidade Visual Café Aurora',
-        description: 'Desenvolvimento completo da identidade visual para cafeteria artesanal, incluindo logotipo, paleta de cores e aplicações.',
-        image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&h=400&fit=crop',
-        category: 'Identidade Visual',
-        date: '2024-01-15',
-        tags: ['Branding', 'Logo', 'Café']
-      },
-      {
-        id: '2',
-        title: 'Campanha Digital TechStart',
-        description: 'Criação de peças digitais para startup de tecnologia, focando em comunicação jovem e inovadora.',
-        image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop',
-        category: 'Design Gráfico',
-        date: '2024-02-10',
-        tags: ['Digital', 'Tech', 'Startup']
-      },
-      {
-        id: '3',
-        title: 'Ensaio Fotográfico Corporativo',
-        description: 'Produção fotográfica para empresa de consultoria, retratando profissionalismo e modernidade.',
-        image: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=600&h=400&fit=crop',
-        category: 'Fotografia',
-        date: '2024-03-05',
-        tags: ['Corporativo', 'Retrato', 'Profissional']
-      },
-      {
-        id: '4',
-        title: 'Website Arquitetônico',
-        description: 'Design e desenvolvimento de website para escritório de arquitetura, com foco na experiência do usuário.',
-        image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop',
-        category: 'Web Design',
-        date: '2024-03-20',
-        tags: ['Website', 'Arquitetura', 'UX/UI']
-      }
-    ];
-
-    const savedProjects = localStorage.getItem('vizualiza-projects');
-    if (savedProjects) {
-      setProjects([...JSON.parse(savedProjects), ...sampleProjects]);
-    } else {
-      setProjects(sampleProjects);
-    }
-  }, []);
 
   // Get all available tags
   const availableTags = useMemo(() => {
@@ -159,6 +103,19 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
     return filtered;
   }, [projects, selectedCategory, searchFilters]);
 
+  if (isLoading) {
+    return (
+      <section id="portfolio" className="py-20 px-4 bg-vizualiza-bg-dark">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-vizualiza-purple mx-auto"></div>
+            <p className="text-white mt-4">Carregando projetos...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="portfolio" className="py-20 px-4 bg-vizualiza-bg-dark">
       <div className="max-w-7xl mx-auto">
@@ -180,14 +137,14 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
           <AdvancedSearch
             onSearch={setSearchFilters}
             availableTags={availableTags}
-            categories={categories.slice(1)} // Remove "Todos" from search categories
+            categories={categoryOptions.slice(1)} // Remove "Todos" from search categories
           />
         </ScrollAnimation>
 
         {/* Legacy Category Filter */}
         <ScrollAnimation direction="up" delay={0.4}>
           <div className="flex flex-wrap justify-center gap-4 mb-12">
-            {categories.map((category) => (
+            {categoryOptions.map((category) => (
               <Button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
@@ -216,7 +173,7 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
               >
                 <div className="relative overflow-hidden">
                   <LazyLoadImage 
-                    src={project.image} 
+                    src={project.featured_image || project.images?.[0]?.image_url || 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&h=400&fit=crop'} 
                     alt={project.title}
                     className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                     effect="blur"

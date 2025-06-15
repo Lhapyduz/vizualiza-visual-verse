@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import { Calendar, Tag, Clock, User, Plus } from 'lucide-react';
@@ -8,19 +8,8 @@ import BlogModal from './BlogModal';
 import AdvancedSearch from './AdvancedSearch';
 import ScrollAnimation from './ScrollAnimation';
 import { motion } from 'framer-motion';
-
-interface BlogPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  image: string;
-  category: string;
-  date: string;
-  author: string;
-  readTime: string;
-  tags: string[];
-}
+import { useBlogPosts, BlogPost } from '@/hooks/useBlogPosts';
+import { useCategories } from '@/hooks/useCategories';
 
 interface BlogProps {
   isAdmin?: boolean;
@@ -35,7 +24,8 @@ interface SearchFilters {
 }
 
 const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const { posts, isLoading } = useBlogPosts();
+  const { categories } = useCategories('blog');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,7 +36,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
     tags: []
   });
 
-  const categories = ['Todos', 'Design', 'Tecnologia', 'Branding', 'Tendências', 'Tutoriais'];
+  const categoryOptions = ['Todos', ...categories.map(cat => cat.name)];
 
   const openPostModal = (post: BlogPost) => {
     setSelectedPost(post);
@@ -64,11 +54,11 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
       title: 'Novo Post',
       excerpt: 'Descrição do novo post...',
       content: 'Conteúdo detalhado do post...',
-      image: 'https://images.unsplash.com/photo-1586953209889-5ce391d8cd9b?w=600&h=400&fit=crop',
+      featured_image: 'https://images.unsplash.com/photo-1586953209889-5ce391d8cd9b?w=600&h=400&fit=crop',
       category: 'Design',
       date: new Date().toISOString().split('T')[0],
       author: 'Gregory Vizualiza',
-      readTime: '5 min',
+      read_time: '5 min',
       tags: ['Novo', 'Post']
     };
     
@@ -76,67 +66,6 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
       onEditPost(newPost);
     }
   };
-
-  useEffect(() => {
-    // Posts de exemplo
-    const samplePosts: BlogPost[] = [
-      {
-        id: '1',
-        title: 'Tendências de Design para 2024',
-        excerpt: 'Explore as principais tendências visuais que estão moldando o design gráfico e web design neste ano.',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-        image: 'https://images.unsplash.com/photo-1560472355-536de3962603?w=600&h=400&fit=crop',
-        category: 'Tendências',
-        date: '2024-06-10',
-        author: 'Gregory Vizualiza',
-        readTime: '5 min',
-        tags: ['Design', 'Tendências', '2024']
-      },
-      {
-        id: '2',
-        title: 'Como Criar uma Identidade Visual Marcante',
-        excerpt: 'Guia completo para desenvolver uma identidade visual que conecte com seu público-alvo.',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-        image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&h=400&fit=crop',
-        category: 'Branding',
-        date: '2024-06-05',
-        author: 'Gregory Vizualiza',
-        readTime: '8 min',
-        tags: ['Branding', 'Identidade', 'Logo']
-      },
-      {
-        id: '3',
-        title: 'Ferramentas Essenciais para Designers',
-        excerpt: 'Descubra as melhores ferramentas e recursos para otimizar seu workflow de design.',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-        image: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=600&h=400&fit=crop',
-        category: 'Tecnologia',
-        date: '2024-05-28',
-        author: 'Gregory Vizualiza',
-        readTime: '6 min',
-        tags: ['Ferramentas', 'Workflow', 'Produtividade']
-      },
-      {
-        id: '4',
-        title: 'Psicologia das Cores no Design',
-        excerpt: 'Como as cores influenciam emoções e comportamentos, e como usar isso a seu favor.',
-        content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-        image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&h=400&fit=crop',
-        category: 'Design',
-        date: '2024-05-20',
-        author: 'Gregory Vizualiza',
-        readTime: '7 min',
-        tags: ['Cores', 'Psicologia', 'Design']
-      }
-    ];
-
-    const savedPosts = localStorage.getItem('vizualiza-posts');
-    if (savedPosts) {
-      setPosts([...JSON.parse(savedPosts), ...samplePosts]);
-    } else {
-      setPosts(samplePosts);
-    }
-  }, []);
 
   // Get all available tags
   const availableTags = useMemo(() => {
@@ -193,6 +122,19 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
     return filtered;
   }, [posts, selectedCategory, searchFilters]);
 
+  if (isLoading) {
+    return (
+      <section id="blog" className="py-20 px-4 bg-vizualiza-bg-light">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-vizualiza-purple mx-auto"></div>
+            <p className="text-white mt-4">Carregando posts...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="blog" className="py-20 px-4 bg-vizualiza-bg-light">
       <div className="max-w-7xl mx-auto">
@@ -225,14 +167,14 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
           <AdvancedSearch
             onSearch={setSearchFilters}
             availableTags={availableTags}
-            categories={categories.slice(1)} // Remove "Todos" from search categories
+            categories={categoryOptions.slice(1)} // Remove "Todos" from search categories
           />
         </ScrollAnimation>
 
         {/* Legacy Category Filter */}
         <ScrollAnimation direction="up" delay={0.4}>
           <div className="flex flex-wrap justify-center gap-4 mb-12">
-            {categories.map((category) => (
+            {categoryOptions.map((category) => (
               <Button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
@@ -261,7 +203,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
               >
                 <div className="relative overflow-hidden">
                   <LazyLoadImage 
-                    src={post.image} 
+                    src={post.featured_image || 'https://images.unsplash.com/photo-1560472355-536de3962603?w=600&h=400&fit=crop'} 
                     alt={post.title}
                     className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
                     effect="blur"
@@ -281,7 +223,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                     </div>
                     <div className="flex items-center">
                       <Clock className="w-4 h-4 mr-1" />
-                      {post.readTime}
+                      {post.read_time}
                     </div>
                   </div>
 

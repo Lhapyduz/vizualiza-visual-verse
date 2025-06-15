@@ -15,29 +15,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import { useGestures } from '@/hooks/useGestures';
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  category: string;
-  date: string;
-  tags: string[];
-}
-
-interface BlogPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  image: string;
-  category: string;
-  date: string;
-  author: string;
-  readTime: string;
-  tags: string[];
-}
+import { Project } from '@/hooks/useProjects';
+import { BlogPost } from '@/hooks/useBlogPosts';
 
 const Index = () => {
   const [showAdmin, setShowAdmin] = useState(false);

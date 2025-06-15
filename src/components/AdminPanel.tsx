@@ -1,11 +1,15 @@
+
 import { useState, useEffect } from 'react';
-import { X, Plus, Edit, Trash2, Save, Upload, Image, BookOpen, Briefcase } from 'lucide-react';
+import { X, Plus, Edit, Trash2, Save, Loader2, Briefcase, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import ImageUpload from './ImageUpload';
+import { useProjects, Project } from '@/hooks/useProjects';
+import { useBlogPosts, BlogPost } from '@/hooks/useBlogPosts';
+import { useCategories } from '@/hooks/useCategories';
 
 interface AdminPanelProps {
   onClose: () => void;
@@ -13,29 +17,6 @@ interface AdminPanelProps {
   editingPost?: BlogPost | null;
   onClearEditingProject?: () => void;
   onClearEditingPost?: () => void;
-}
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  category: string;
-  date: string;
-  tags: string[];
-}
-
-interface BlogPost {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  image: string;
-  category: string;
-  date: string;
-  author: string;
-  readTime: string;
-  tags: string[];
 }
 
 const AdminPanel = ({ 
@@ -46,21 +27,41 @@ const AdminPanel = ({
   onClearEditingPost 
 }: AdminPanelProps) => {
   const [activeTab, setActiveTab] = useState<'projects' | 'posts'>('projects');
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [editingProjectState, setEditingProjectState] = useState<Project | null>(null);
   const [editingPostState, setEditingPostState] = useState<BlogPost | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [projectImages, setProjectImages] = useState<string[]>([]);
+  const [postImage, setPostImage] = useState<string[]>([]);
   const { toast } = useToast();
 
-  const projectCategories = ['Identidade Visual', 'Design Gráfico', 'Fotografia', 'Web Design'];
-  const postCategories = ['Design', 'Tecnologia', 'Branding', 'Tendências', 'Tutoriais'];
+  // Hooks for data management
+  const { 
+    projects, 
+    createProject, 
+    updateProject, 
+    deleteProject,
+    isCreating: isCreatingProject,
+    isUpdating: isUpdatingProject,
+    isDeleting: isDeletingProject
+  } = useProjects();
+
+  const { 
+    posts, 
+    createPost, 
+    updatePost, 
+    deletePost,
+    isCreating: isCreatingPost,
+    isUpdating: isUpdatingPost,
+    isDeleting: isDeletingPost
+  } = useBlogPosts();
+
+  const { categories: projectCategories } = useCategories('project');
+  const { categories: postCategories } = useCategories('blog');
 
   const initialProject: Omit<Project, 'id'> = {
     title: '',
     description: '',
-    image: '',
+    featured_image: '',
     category: '',
     date: new Date().toISOString().split('T')[0],
     tags: []
@@ -70,11 +71,11 @@ const AdminPanel = ({
     title: '',
     excerpt: '',
     content: '',
-    image: '',
+    featured_image: '',
     category: '',
     date: new Date().toISOString().split('T')[0],
     author: 'Gregory Vizualiza',
-    readTime: '5 min',
+    read_time: '5 min',
     tags: []
   };
 
@@ -82,9 +83,6 @@ const AdminPanel = ({
   const [postFormData, setPostFormData] = useState<Omit<BlogPost, 'id'>>(initialPost);
 
   useEffect(() => {
-    loadProjects();
-    loadPosts();
-    
     // Se há um projeto sendo editado
     if (editingProject) {
       setActiveTab('projects');
@@ -92,17 +90,19 @@ const AdminPanel = ({
       setProjectFormData({
         title: editingProject.title,
         description: editingProject.description,
-        image: editingProject.image,
+        featured_image: editingProject.featured_image || '',
         category: editingProject.category,
         date: editingProject.date,
         tags: editingProject.tags
       });
-      setProjectImages([editingProject.image]);
+      const images = editingProject.images?.map(img => img.image_url) || [];
+      if (editingProject.featured_image) {
+        images.unshift(editingProject.featured_image);
+      }
+      setProjectImages([...new Set(images)]); // Remove duplicates
       setIsCreating(true);
       
-      if (onClearEditingProject) {
-        onClearEditingProject();
-      }
+      onClearEditingProject?.();
     }
 
     // Se há um post sendo editado
@@ -113,70 +113,33 @@ const AdminPanel = ({
         title: editingPost.title,
         excerpt: editingPost.excerpt,
         content: editingPost.content,
-        image: editingPost.image,
+        featured_image: editingPost.featured_image || '',
         category: editingPost.category,
         date: editingPost.date,
         author: editingPost.author,
-        readTime: editingPost.readTime,
+        read_time: editingPost.read_time,
         tags: editingPost.tags
       });
+      setPostImage(editingPost.featured_image ? [editingPost.featured_image] : []);
       setIsCreating(true);
       
-      if (onClearEditingPost) {
-        onClearEditingPost();
-      }
+      onClearEditingPost?.();
     }
   }, [editingProject, editingPost, onClearEditingProject, onClearEditingPost]);
-
-  const loadProjects = () => {
-    const savedProjects = localStorage.getItem('vizualiza-projects');
-    if (savedProjects) {
-      setProjects(JSON.parse(savedProjects));
-    }
-  };
-
-  const loadPosts = () => {
-    const savedPosts = localStorage.getItem('vizualiza-posts');
-    if (savedPosts) {
-      setPosts(JSON.parse(savedPosts));
-    }
-  };
-
-  const saveProjects = (updatedProjects: Project[]) => {
-    localStorage.setItem('vizualiza-projects', JSON.stringify(updatedProjects));
-    setProjects(updatedProjects);
-  };
-
-  const savePosts = (updatedPosts: BlogPost[]) => {
-    localStorage.setItem('vizualiza-posts', JSON.stringify(updatedPosts));
-    setPosts(updatedPosts);
-  };
 
   const handleProjectSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    const projectData = {
+      ...projectFormData,
+      featured_image: projectImages[0] || '',
+      images: projectImages
+    };
+
     if (editingProjectState) {
-      const updatedProjects = projects.map(p => 
-        p.id === editingProjectState.id 
-          ? { ...projectFormData, id: editingProjectState.id }
-          : p
-      );
-      saveProjects(updatedProjects);
-      toast({
-        title: "Projeto atualizado!",
-        description: "As alterações foram salvas com sucesso.",
-      });
+      updateProject({ id: editingProjectState.id, ...projectData });
     } else {
-      const newProject: Project = {
-        ...projectFormData,
-        id: Date.now().toString()
-      };
-      const updatedProjects = [...projects, newProject];
-      saveProjects(updatedProjects);
-      toast({
-        title: "Projeto criado!",
-        description: "Novo projeto adicionado ao portfólio.",
-      });
+      createProject(projectData);
     }
 
     resetProjectForm();
@@ -185,49 +148,18 @@ const AdminPanel = ({
   const handlePostSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    const postData = {
+      ...postFormData,
+      featured_image: postImage[0] || ''
+    };
+
     if (editingPostState) {
-      const updatedPosts = posts.map(p => 
-        p.id === editingPostState.id 
-          ? { ...postFormData, id: editingPostState.id }
-          : p
-      );
-      savePosts(updatedPosts);
-      toast({
-        title: "Post atualizado!",
-        description: "As alterações foram salvas com sucesso.",
-      });
+      updatePost({ id: editingPostState.id, ...postData });
     } else {
-      const newPost: BlogPost = {
-        ...postFormData,
-        id: Date.now().toString()
-      };
-      const updatedPosts = [...posts, newPost];
-      savePosts(updatedPosts);
-      toast({
-        title: "Post criado!",
-        description: "Novo post adicionado ao blog.",
-      });
+      createPost(postData);
     }
 
     resetPostForm();
-  };
-
-  const handleDeleteProject = (id: string) => {
-    const updatedProjects = projects.filter(p => p.id !== id);
-    saveProjects(updatedProjects);
-    toast({
-      title: "Projeto removido!",
-      description: "O projeto foi excluído do portfólio.",
-    });
-  };
-
-  const handleDeletePost = (id: string) => {
-    const updatedPosts = posts.filter(p => p.id !== id);
-    savePosts(updatedPosts);
-    toast({
-      title: "Post removido!",
-      description: "O post foi excluído do blog.",
-    });
   };
 
   const handleEditProject = (project: Project) => {
@@ -235,12 +167,16 @@ const AdminPanel = ({
     setProjectFormData({
       title: project.title,
       description: project.description,
-      image: project.image,
+      featured_image: project.featured_image || '',
       category: project.category,
       date: project.date,
       tags: project.tags
     });
-    setProjectImages([project.image]);
+    const images = project.images?.map(img => img.image_url) || [];
+    if (project.featured_image) {
+      images.unshift(project.featured_image);
+    }
+    setProjectImages([...new Set(images)]);
     setIsCreating(true);
   };
 
@@ -250,13 +186,14 @@ const AdminPanel = ({
       title: post.title,
       excerpt: post.excerpt,
       content: post.content,
-      image: post.image,
+      featured_image: post.featured_image || '',
       category: post.category,
       date: post.date,
       author: post.author,
-      readTime: post.readTime,
+      read_time: post.read_time,
       tags: post.tags
     });
+    setPostImage(post.featured_image ? [post.featured_image] : []);
     setIsCreating(true);
   };
 
@@ -270,6 +207,7 @@ const AdminPanel = ({
   const resetPostForm = () => {
     setPostFormData(initialPost);
     setEditingPostState(null);
+    setPostImage([]);
     setIsCreating(false);
   };
 
@@ -294,13 +232,14 @@ const AdminPanel = ({
   const handleProjectImagesSelected = (images: string[]) => {
     setProjectImages(images);
     if (images.length > 0) {
-      setProjectFormData(prev => ({ ...prev, image: images[0] }));
+      setProjectFormData(prev => ({ ...prev, featured_image: images[0] }));
     }
   };
 
   const handlePostImageSelected = (images: string[]) => {
+    setPostImage(images);
     if (images.length > 0) {
-      setPostFormData(prev => ({ ...prev, image: images[0] }));
+      setPostFormData(prev => ({ ...prev, featured_image: images[0] }));
     }
   };
 
@@ -396,6 +335,7 @@ const AdminPanel = ({
                       onImagesSelected={handleProjectImagesSelected}
                       maxImages={5}
                       existingImages={projectImages}
+                      bucket="project-images"
                     />
                   </div>
 
@@ -405,8 +345,8 @@ const AdminPanel = ({
                     </SelectTrigger>
                     <SelectContent>
                       {projectCategories.map(category => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                        <SelectItem key={category.id} value={category.name}>
+                          {category.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -430,9 +370,14 @@ const AdminPanel = ({
                   <div className="flex space-x-4">
                     <Button 
                       type="submit"
+                      disabled={isCreatingProject || isUpdatingProject}
                       className="flex-1 bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
                     >
-                      <Save className="w-4 h-4 mr-2" />
+                      {(isCreatingProject || isUpdatingProject) ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4 mr-2" />
+                      )}
                       {editingProjectState ? 'Atualizar' : 'Criar'}
                     </Button>
                     <Button 
@@ -471,12 +416,17 @@ const AdminPanel = ({
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button
-                          onClick={() => handleDeleteProject(project.id)}
+                          onClick={() => deleteProject(project.id)}
+                          disabled={isDeletingProject}
                           size="sm"
                           variant="outline"
                           className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          {isDeletingProject ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -547,7 +497,8 @@ const AdminPanel = ({
                     <ImageUpload
                       onImagesSelected={handlePostImageSelected}
                       maxImages={1}
-                      existingImages={postFormData.image ? [postFormData.image] : []}
+                      existingImages={postImage}
+                      bucket="blog-images"
                     />
                   </div>
 
@@ -557,8 +508,8 @@ const AdminPanel = ({
                     </SelectTrigger>
                     <SelectContent>
                       {postCategories.map(category => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                        <SelectItem key={category.id} value={category.name}>
+                          {category.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -575,8 +526,8 @@ const AdminPanel = ({
 
                     <Input
                       placeholder="Tempo de leitura (ex: 5 min)"
-                      value={postFormData.readTime}
-                      onChange={(e) => setPostFormData(prev => ({ ...prev, readTime: e.target.value }))}
+                      value={postFormData.read_time}
+                      onChange={(e) => setPostFormData(prev => ({ ...prev, read_time: e.target.value }))}
                       required
                       className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                     />
@@ -600,9 +551,14 @@ const AdminPanel = ({
                   <div className="flex space-x-4">
                     <Button 
                       type="submit"
+                      disabled={isCreatingPost || isUpdatingPost}
                       className="flex-1 bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
                     >
-                      <Save className="w-4 h-4 mr-2" />
+                      {(isCreatingPost || isUpdatingPost) ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Save className="w-4 h-4 mr-2" />
+                      )}
                       {editingPostState ? 'Atualizar' : 'Criar'}
                     </Button>
                     <Button 
@@ -641,12 +597,17 @@ const AdminPanel = ({
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button
-                          onClick={() => handleDeletePost(post.id)}
+                          onClick={() => deletePost(post.id)}
+                          disabled={isDeletingPost}
                           size="sm"
                           variant="outline"
                           className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          {isDeletingPost ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
                         </Button>
                       </div>
                     </div>

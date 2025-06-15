@@ -1,86 +1,46 @@
 
 import React, { useState, useCallback } from 'react';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 interface ImageUploadProps {
   onImagesSelected: (images: string[]) => void;
   maxImages?: number;
   existingImages?: string[];
   className?: string;
+  bucket: 'project-images' | 'blog-images';
 }
 
 const ImageUpload = ({ 
   onImagesSelected, 
   maxImages = 10, 
   existingImages = [],
-  className = '' 
+  className = '',
+  bucket
 }: ImageUploadProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>(existingImages);
-  const [isUploading, setIsUploading] = useState(false);
-  const { toast } = useToast();
 
-  const convertToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = error => reject(error);
-    });
-  };
+  const { uploadFiles, deleteFile, uploading, progress } = useImageUpload({
+    bucket,
+    maxFiles: maxImages,
+    onSuccess: (urls) => {
+      const newImages = [...uploadedImages, ...urls];
+      setUploadedImages(newImages);
+      onImagesSelected(newImages);
+    }
+  });
 
   const handleFiles = useCallback(async (files: FileList) => {
     if (files.length === 0) return;
 
-    const imageFiles = Array.from(files).filter(file => 
-      file.type.startsWith('image/')
-    );
-
-    if (imageFiles.length === 0) {
-      toast({
-        title: "Erro",
-        description: "Por favor, selecione apenas arquivos de imagem.",
-        variant: "destructive"
-      });
+    if (uploadedImages.length + files.length > maxImages) {
       return;
     }
 
-    if (uploadedImages.length + imageFiles.length > maxImages) {
-      toast({
-        title: "Limite excedido",
-        description: `Você pode fazer upload de no máximo ${maxImages} imagens.`,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsUploading(true);
-
-    try {
-      const base64Images = await Promise.all(
-        imageFiles.map(file => convertToBase64(file))
-      );
-
-      const newImages = [...uploadedImages, ...base64Images];
-      setUploadedImages(newImages);
-      onImagesSelected(newImages);
-
-      toast({
-        title: "Upload realizado!",
-        description: `${imageFiles.length} imagem(ns) carregada(s) com sucesso.`,
-      });
-    } catch (error) {
-      toast({
-        title: "Erro no upload",
-        description: "Ocorreu um erro ao processar as imagens.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  }, [uploadedImages, maxImages, onImagesSelected, toast]);
+    await uploadFiles(files);
+  }, [uploadFiles, uploadedImages.length, maxImages]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -104,10 +64,15 @@ const ImageUpload = ({
     }
   }, [handleFiles]);
 
-  const removeImage = (index: number) => {
-    const newImages = uploadedImages.filter((_, i) => i !== index);
-    setUploadedImages(newImages);
-    onImagesSelected(newImages);
+  const removeImage = async (index: number) => {
+    const imageUrl = uploadedImages[index];
+    const success = await deleteFile(imageUrl);
+    
+    if (success) {
+      const newImages = uploadedImages.filter((_, i) => i !== index);
+      setUploadedImages(newImages);
+      onImagesSelected(newImages);
+    }
   };
 
   return (
@@ -121,7 +86,7 @@ const ImageUpload = ({
           isDragOver
             ? 'border-vizualiza-purple bg-vizualiza-purple/10'
             : 'border-white/20 hover:border-vizualiza-purple/50'
-        } ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
+        } ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
       >
         <input
           type="file"
@@ -130,30 +95,37 @@ const ImageUpload = ({
           accept="image/*"
           onChange={handleFileInput}
           className="hidden"
-          disabled={isUploading}
+          disabled={uploading}
         />
         
         <div className="flex flex-col items-center space-y-4">
           <div className={`p-4 rounded-full ${isDragOver ? 'bg-vizualiza-purple' : 'bg-white/10'}`}>
-            <Upload className="w-8 h-8 text-white" />
+            {uploading ? (
+              <Loader2 className="w-8 h-8 text-white animate-spin" />
+            ) : (
+              <Upload className="w-8 h-8 text-white" />
+            )}
           </div>
           
           <div>
             <h3 className="text-lg font-semibold text-white mb-2">
-              {isUploading ? 'Processando imagens...' : 'Faça upload das suas imagens'}
+              {uploading ? 'Fazendo upload...' : 'Faça upload das suas imagens'}
             </h3>
             <p className="text-gray-400 mb-4">
               Arraste e solte suas imagens aqui ou clique para selecionar
             </p>
             <p className="text-sm text-gray-500">
-              Máximo de {maxImages} imagens • Formatos: JPG, PNG, GIF
+              Máximo de {maxImages} imagens • Formatos: JPG, PNG, GIF, WebP
+            </p>
+            <p className="text-sm text-gray-500">
+              Tamanho máximo: 10MB por arquivo
             </p>
           </div>
           
           <Button
             type="button"
             onClick={() => document.getElementById('imageUpload')?.click()}
-            disabled={isUploading}
+            disabled={uploading}
             className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
           >
             <ImageIcon className="w-4 h-4 mr-2" />
@@ -161,6 +133,20 @@ const ImageUpload = ({
           </Button>
         </div>
       </div>
+
+      {/* Progress indicators */}
+      {Object.keys(progress).length > 0 && (
+        <div className="space-y-2">
+          {Object.entries(progress).map(([fileId, percent]) => (
+            <div key={fileId} className="bg-white/10 rounded-full h-2">
+              <div 
+                className="bg-vizualiza-purple h-2 rounded-full transition-all duration-300"
+                style={{ width: `${percent}%` }}
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Image Preview Grid */}
       {uploadedImages.length > 0 && (
@@ -171,6 +157,7 @@ const ImageUpload = ({
                 src={image}
                 alt={`Upload ${index + 1}`}
                 className="w-full h-32 object-cover rounded-lg"
+                loading="lazy"
               />
               <Button
                 type="button"

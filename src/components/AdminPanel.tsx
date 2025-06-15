@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, FolderOpen, FileText, Tag, BarChart3, Share2, Plus } from 'lucide-react';
@@ -64,16 +63,31 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
 
   const handleProjectSubmit = async (data: ProjectFormData) => {
     try {
-      // Convert string array to ProjectImage array for images
-      const projectData = {
-        ...data,
-        images: data.images?.map(url => ({ url, alt: data.title })) || []
-      };
-      
       if (editingProject) {
-        await updateProject({ id: editingProject.id, ...projectData });
+        // For updating, convert string URLs to proper format expected by updateProject
+        const updateData = {
+          id: editingProject.id,
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          date: data.date,
+          tags: data.tags,
+          featured_image: data.featured_image,
+          images: data.images || [] // Pass as string array for update
+        };
+        await updateProject(updateData);
       } else {
-        await createProject(projectData);
+        // For creating, ensure we pass string array as expected by createProject
+        const createData = {
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          date: data.date,
+          tags: data.tags,
+          featured_image: data.featured_image,
+          images: data.images || [] // Pass as string array for create
+        };
+        await createProject(createData);
       }
       onClearEditingProject();
       setShowProjectForm(false);

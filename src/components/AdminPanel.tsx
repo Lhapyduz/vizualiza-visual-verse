@@ -101,9 +101,9 @@ const AdminPanel = ({
       content: data.content,
       category: data.category,
       author: data.author,
-      read_time: data.readTime, // Convert readTime to read_time
+      read_time: data.readTime,
       tags: data.tags,
-      featured_image: data.image,
+      featured_image: data.images.length > 0 ? data.images[0] : undefined,
       date: data.date
     };
 

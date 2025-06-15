@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCategories } from '@/hooks/useCategories';
-import { useImageUpload } from '@/hooks/useImageUpload';
 import ImageUpload from '@/components/ImageUpload';
 import TagManager from '@/components/TagManager';
 import { BlogPost } from '@/hooks/useBlogPosts';
@@ -18,7 +18,7 @@ export interface BlogFormData {
   author: string;
   readTime: string;
   tags: string[];
-  image?: string;
+  images: string[];
 }
 
 interface BlogFormProps {
@@ -38,19 +38,10 @@ const BlogForm = ({ onSubmit, onCancel, editingPost, isLoading = false }: BlogFo
     author: '',
     readTime: '',
     tags: [],
-    image: ''
+    images: []
   });
 
   const { categories } = useCategories('blog');
-  const { uploadFiles, uploading } = useImageUpload({
-    bucket: 'blog-images',
-    maxFiles: 1,
-    onSuccess: (urls) => {
-      if (urls.length > 0) {
-        setFormData(prev => ({ ...prev, image: urls[0] }));
-      }
-    }
-  });
 
   useEffect(() => {
     if (editingPost) {
@@ -63,7 +54,7 @@ const BlogForm = ({ onSubmit, onCancel, editingPost, isLoading = false }: BlogFo
         author: editingPost.author,
         readTime: editingPost.readTime,
         tags: editingPost.tags || [],
-        image: editingPost.image || ''
+        images: editingPost.image ? [editingPost.image] : []
       });
     }
   }, [editingPost]);
@@ -73,10 +64,8 @@ const BlogForm = ({ onSubmit, onCancel, editingPost, isLoading = false }: BlogFo
     onSubmit(formData);
   };
 
-  const handleImageUpload = async (images: string[]) => {
-    if (images.length > 0) {
-      setFormData(prev => ({ ...prev, image: images[0] }));
-    }
+  const handleImageUpload = (images: string[]) => {
+    setFormData(prev => ({ ...prev, images }));
   };
 
   return (
@@ -174,11 +163,14 @@ const BlogForm = ({ onSubmit, onCancel, editingPost, isLoading = false }: BlogFo
       />
 
       <div>
-        <label className="block text-sm font-medium text-white mb-2">Imagem</label>
+        <label className="block text-sm font-medium text-white mb-2">Imagens</label>
+        <p className="text-sm text-gray-400 mb-3">
+          A primeira imagem será usada como imagem principal do post
+        </p>
         <ImageUpload 
           onImagesSelected={handleImageUpload}
-          maxImages={1}
-          existingImages={formData.image ? [formData.image] : []}
+          maxImages={10}
+          existingImages={formData.images}
           bucket="blog-images"
         />
       </div>

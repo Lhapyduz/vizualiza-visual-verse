@@ -48,11 +48,26 @@ const ProjectForm = ({ onSubmit, onCancel, editingProject, isLoading = false }: 
         tags: editingProject.tags || []
       });
       
-      const projectImages = editingProject.images?.map(img => img.image_url) || [];
+      // Fix: Properly handle images without duplication
+      const projectImages: string[] = [];
+      
+      // Add featured image if it exists
       if (editingProject.featured_image) {
-        projectImages.unshift(editingProject.featured_image);
+        projectImages.push(editingProject.featured_image);
       }
-      setImages([...new Set(projectImages)]);
+      
+      // Add additional images if they exist, but avoid duplicating the featured image
+      if (editingProject.images && editingProject.images.length > 0) {
+        editingProject.images.forEach(img => {
+          const imageUrl = img.image_url;
+          // Only add if it's not already in the array (avoid duplicating featured image)
+          if (!projectImages.includes(imageUrl)) {
+            projectImages.push(imageUrl);
+          }
+        });
+      }
+      
+      setImages(projectImages);
     } else {
       // Reset form when creating new project
       setFormData({

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { X, Plus, Edit, Trash2, Save, Loader2, Briefcase, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -62,6 +61,7 @@ const AdminPanel = ({
     title: '',
     description: '',
     featured_image: '',
+    image: '', // Add required image property
     category: '',
     date: new Date().toISOString().split('T')[0],
     tags: []
@@ -72,10 +72,12 @@ const AdminPanel = ({
     excerpt: '',
     content: '',
     featured_image: '',
+    image: '', // Add required image property
     category: '',
     date: new Date().toISOString().split('T')[0],
     author: 'Gregory Vizualiza',
     read_time: '5 min',
+    readTime: '5 min', // Add required readTime property
     tags: []
   };
 
@@ -91,6 +93,7 @@ const AdminPanel = ({
         title: editingProject.title,
         description: editingProject.description,
         featured_image: editingProject.featured_image || '',
+        image: editingProject.image || editingProject.featured_image || '', // Add image property
         category: editingProject.category,
         date: editingProject.date,
         tags: editingProject.tags
@@ -114,10 +117,12 @@ const AdminPanel = ({
         excerpt: editingPost.excerpt,
         content: editingPost.content,
         featured_image: editingPost.featured_image || '',
+        image: editingPost.image || editingPost.featured_image || '', // Add image property
         category: editingPost.category,
         date: editingPost.date,
         author: editingPost.author,
         read_time: editingPost.read_time,
+        readTime: editingPost.readTime || editingPost.read_time, // Add readTime property
         tags: editingPost.tags
       });
       setPostImage(editingPost.featured_image ? [editingPost.featured_image] : []);
@@ -133,6 +138,7 @@ const AdminPanel = ({
     const projectData = {
       ...projectFormData,
       featured_image: projectImages[0] || '',
+      image: projectImages[0] || '', // Ensure image is set
       images: projectImages.map((url, index) => ({ 
         id: Date.now().toString() + index, 
         project_id: editingProjectState?.id || '',
@@ -147,6 +153,7 @@ const AdminPanel = ({
       createProject({
         ...projectFormData,
         featured_image: projectImages[0] || '',
+        image: projectImages[0] || '', // Ensure image is set
         images: projectImages
       });
     }
@@ -159,7 +166,9 @@ const AdminPanel = ({
     
     const postData = {
       ...postFormData,
-      featured_image: postImage[0] || ''
+      featured_image: postImage[0] || '',
+      image: postImage[0] || '', // Ensure image is set
+      readTime: postFormData.read_time // Ensure readTime matches read_time
     };
 
     if (editingPostState) {
@@ -177,6 +186,7 @@ const AdminPanel = ({
       title: project.title,
       description: project.description,
       featured_image: project.featured_image || '',
+      image: project.image || project.featured_image || '', // Add image property
       category: project.category,
       date: project.date,
       tags: project.tags
@@ -196,10 +206,12 @@ const AdminPanel = ({
       excerpt: post.excerpt,
       content: post.content,
       featured_image: post.featured_image || '',
+      image: post.image || post.featured_image || '', // Add image property
       category: post.category,
       date: post.date,
       author: post.author,
       read_time: post.read_time,
+      readTime: post.readTime || post.read_time, // Add readTime property
       tags: post.tags
     });
     setPostImage(post.featured_image ? [post.featured_image] : []);
@@ -241,14 +253,22 @@ const AdminPanel = ({
   const handleProjectImagesSelected = (images: string[]) => {
     setProjectImages(images);
     if (images.length > 0) {
-      setProjectFormData(prev => ({ ...prev, featured_image: images[0] }));
+      setProjectFormData(prev => ({ 
+        ...prev, 
+        featured_image: images[0],
+        image: images[0] // Update both featured_image and image
+      }));
     }
   };
 
   const handlePostImageSelected = (images: string[]) => {
     setPostImage(images);
     if (images.length > 0) {
-      setPostFormData(prev => ({ ...prev, featured_image: images[0] }));
+      setPostFormData(prev => ({ 
+        ...prev, 
+        featured_image: images[0],
+        image: images[0] // Update both featured_image and image
+      }));
     }
   };
 
@@ -536,7 +556,11 @@ const AdminPanel = ({
                     <Input
                       placeholder="Tempo de leitura (ex: 5 min)"
                       value={postFormData.read_time}
-                      onChange={(e) => setPostFormData(prev => ({ ...prev, read_time: e.target.value }))}
+                      onChange={(e) => setPostFormData(prev => ({ 
+                        ...prev, 
+                        read_time: e.target.value,
+                        readTime: e.target.value // Update both properties
+                      }))}
                       required
                       className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                     />

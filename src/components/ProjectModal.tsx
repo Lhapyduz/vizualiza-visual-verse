@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { X, Calendar, Tag, ExternalLink, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
+import { X, Calendar, Tag, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ImageZoom from './ImageZoom';
 import { Project } from '@/hooks/useProjects';
@@ -190,20 +190,6 @@ const ProjectModal = ({ project, isOpen, onClose, isAdmin = false, onEdit }: Pro
                   <p className="text-gray-300">Identidade visual coesa em todos os pontos de contato</p>
                 </div>
               </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 pt-6">
-              <Button className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark text-white px-8 py-3 rounded-full text-base font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center">
-                <ExternalLink className="w-5 h-5 mr-2" />
-                Ver Projeto Completo
-              </Button>
-              <Button 
-                variant="outline" 
-                className="border-vizualiza-orange text-vizualiza-orange hover:bg-vizualiza-orange hover:text-white px-8 py-3 rounded-full text-base font-medium transition-all duration-300 hover:scale-105"
-              >
-                Solicitar Orçamento
-              </Button>
             </div>
           </div>
         </div>

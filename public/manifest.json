@@ -1,0 +1,27 @@
+
+{
+  "name": "Vizualiza Visual Verse",
+  "short_name": "Vizualiza",
+  "description": "Estúdio de design especializado em identidade visual, web design e branding",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0F23",
+  "theme_color": "#8B5CF6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/placeholder.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["design", "business", "creative"],
+  "lang": "pt-BR",
+  "dir": "ltr"
+}

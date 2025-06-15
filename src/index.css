@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,19 +36,12 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -88,6 +82,22 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  /* Light Theme Variables */
+  .light-theme {
+    --vizualiza-bg-dark: 248 250 252;
+    --vizualiza-bg-light: 241 245 249;
+    --vizualiza-text-primary: 15 23 42;
+    --vizualiza-text-secondary: 71 85 105;
+  }
+
+  /* Dark Theme Variables (default) */
+  :root:not(.light-theme) {
+    --vizualiza-bg-dark: 15 15 35;
+    --vizualiza-bg-light: 26 26 46;
+    --vizualiza-text-primary: 255 255 255;
+    --vizualiza-text-secondary: 156 163 175;
+  }
 }
 
 @layer base {
@@ -97,5 +107,74 @@
 
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgb(15 15 35 / 0.5);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgb(139 92 246 / 0.5);
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgb(139 92 246 / 0.8);
+  }
+
+  /* Light theme scrollbar */
+  .light-theme ::-webkit-scrollbar-track {
+    background: rgb(241 245 249 / 0.5);
+  }
+
+  .light-theme ::-webkit-scrollbar-thumb {
+    background: rgb(139 92 246 / 0.3);
+  }
+
+  .light-theme ::-webkit-scrollbar-thumb:hover {
+    background: rgb(139 92 246 / 0.6);
+  }
+}
+
+/* Microinteractions */
+@layer utilities {
+  .hover-lift {
+    transition: transform 0.2s ease;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+
+  .hover-glow {
+    transition: box-shadow 0.3s ease;
+  }
+
+  .hover-glow:hover {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+
+  .pulse-subtle {
+    animation: pulse-subtle 2s infinite;
+  }
+
+  @keyframes pulse-subtle {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.8;
+    }
   }
 }

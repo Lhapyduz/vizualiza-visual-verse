@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Menu, X, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import ThemeToggle from './ThemeToggle';
 
 interface NavbarProps {
   onAdminClick: () => void;
@@ -44,17 +45,18 @@ const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps
                 <button
                   key={item.name}
                   onClick={() => scrollToSection(item.href)}
-                  className="text-white hover:text-vizualiza-purple px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                  className="text-white hover:text-vizualiza-purple px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:scale-105"
                 >
                   {item.name}
                 </button>
               ))}
               <div className="flex items-center space-x-2 ml-4">
+                <ThemeToggle />
                 <Button
                   onClick={onAdminClick}
                   variant="outline"
                   size="sm"
-                  className="border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white"
+                  className="border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white hover:scale-105 transition-all duration-200"
                 >
                   <Settings className="w-4 h-4 mr-2" />
                   {isAdminLoggedIn ? 'Painel' : 'Admin'}
@@ -64,7 +66,7 @@ const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps
                     onClick={onLogout}
                     variant="outline"
                     size="sm"
-                    className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                    className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white hover:scale-105 transition-all duration-200"
                   >
                     <LogOut className="w-4 h-4" />
                   </Button>
@@ -101,6 +103,7 @@ const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps
               </button>
             ))}
             <div className="flex flex-col space-y-2 px-3 pt-2">
+              <ThemeToggle />
               <Button
                 onClick={onAdminClick}
                 variant="outline"

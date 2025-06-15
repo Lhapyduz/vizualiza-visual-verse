@@ -51,7 +51,7 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
   // Get all available tags
   const availableTags = useMemo(() => {
     const allTags = projects.flatMap(project => project.tags || []);
-    return [...new Set(allTags.filter(tag => typeof tag === 'string'))];
+    return [...new Set(allTags.filter(tag => typeof tag === 'string' && tag.trim() !== ''))];
   }, [projects]);
 
   // Filter projects based on search and filters
@@ -171,7 +171,7 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => openProjectModal({
                   ...project,
-                  image: project.featured_image // Add image property for modal compatibility
+                  image: project.featured_image || project.images?.[0]?.image_url
                 })}
               >
                 <div className="relative overflow-hidden">

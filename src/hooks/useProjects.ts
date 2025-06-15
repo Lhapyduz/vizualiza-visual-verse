@@ -14,6 +14,8 @@ export interface Project {
   images?: ProjectImage[];
   created_at?: string;
   updated_at?: string;
+  // Add compatibility property for components
+  image?: string;
 }
 
 export interface ProjectImage {
@@ -60,7 +62,8 @@ export const useProjects = () => {
           const data = await response.json();
           return (data || []).map((project: any) => ({
             ...project,
-            images: project.project_images || []
+            images: project.project_images || [],
+            image: project.featured_image || project.project_images?.[0]?.image_url
           })) as Project[];
         } else {
           throw new Error('Supabase fetch failed');
@@ -68,7 +71,11 @@ export const useProjects = () => {
       } catch (err) {
         console.log('Error fetching projects, using localStorage fallback:', err);
         const localProjects = localStorage.getItem('vizualiza-projects');
-        return localProjects ? JSON.parse(localProjects) : [];
+        const projects = localProjects ? JSON.parse(localProjects) : [];
+        return projects.map((project: Project) => ({
+          ...project,
+          image: project.featured_image || project.images?.[0]?.image_url
+        }));
       }
     }
   });

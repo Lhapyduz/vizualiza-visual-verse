@@ -16,6 +16,9 @@ export interface BlogPost {
   date: string;
   created_at?: string;
   updated_at?: string;
+  // Add compatibility properties for components
+  image?: string;
+  readTime?: string;
 }
 
 interface CreateBlogPostData {
@@ -54,14 +57,23 @@ export const useBlogPosts = () => {
 
         if (response.ok) {
           const data = await response.json();
-          return data as BlogPost[];
+          return (data as BlogPost[]).map(post => ({
+            ...post,
+            image: post.featured_image,
+            readTime: post.read_time
+          }));
         } else {
           throw new Error('Supabase fetch failed');
         }
       } catch (err) {
         console.log('Error fetching blog posts, using localStorage fallback:', err);
         const localPosts = localStorage.getItem('vizualiza-blog-posts');
-        return localPosts ? JSON.parse(localPosts) : [];
+        const posts = localPosts ? JSON.parse(localPosts) : [];
+        return posts.map((post: BlogPost) => ({
+          ...post,
+          image: post.featured_image,
+          readTime: post.read_time
+        }));
       }
     }
   });

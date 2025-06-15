@@ -59,7 +59,9 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
       date: new Date().toISOString().split('T')[0],
       author: 'Gregory Vizualiza',
       read_time: '5 min',
-      tags: ['Novo', 'Post']
+      tags: ['Novo', 'Post'],
+      image: 'https://images.unsplash.com/photo-1586953209889-5ce391d8cd9b?w=600&h=400&fit=crop',
+      readTime: '5 min'
     };
     
     if (onEditPost) {
@@ -70,7 +72,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
   // Get all available tags
   const availableTags = useMemo(() => {
     const allTags = posts.flatMap(post => post.tags || []);
-    return [...new Set(allTags.filter(tag => typeof tag === 'string'))];
+    return [...new Set(allTags.filter(tag => typeof tag === 'string' && tag.trim() !== ''))];
   }, [posts]);
 
   // Filter posts based on search and filters
@@ -201,8 +203,8 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => openPostModal({
                   ...post,
-                  image: post.featured_image, // Add image property for modal compatibility
-                  readTime: post.read_time // Add readTime property for modal compatibility
+                  image: post.featured_image || post.image,
+                  readTime: post.read_time || post.readTime
                 })}
               >
                 <div className="relative overflow-hidden">

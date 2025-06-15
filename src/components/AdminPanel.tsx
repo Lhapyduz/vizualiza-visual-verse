@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { X, FolderOpen, FileText, Tag, BarChart3, Share2 } from 'lucide-react';
@@ -47,34 +48,34 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
     switch (activeTab) {
       case 'projects':
         return editingProject ? (
-          <ProjectForm 
-            project={editingProject} 
-            onCancel={onClearEditingProject}
-          />
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white">Editar Projeto</h3>
+            <div className="text-gray-400">
+              Funcionalidade de edição será implementada em breve.
+            </div>
+          </div>
         ) : (
-          <ProjectList onEditProject={(project) => {
-            // Logic handled in parent component
-          }} />
+          <ProjectList />
         );
       case 'blog':
         return editingPost ? (
-          <BlogForm 
-            post={editingPost} 
-            onCancel={onClearEditingPost}
-          />
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-white">Editar Post</h3>
+            <div className="text-gray-400">
+              Funcionalidade de edição será implementada em breve.
+            </div>
+          </div>
         ) : (
-          <BlogList onEditPost={(post) => {
-            // Logic handled in parent component
-          }} />
+          <BlogList />
         );
       case 'categories':
-        return <CategoryManager />;
+        return <CategoryManager type="project" />;
       case 'social':
         return <SocialMediaManager />;
       case 'analytics':
         return <Analytics />;
       default:
-        return <ProjectList onEditProject={() => {}} />;
+        return <ProjectList />;
     }
   };
 

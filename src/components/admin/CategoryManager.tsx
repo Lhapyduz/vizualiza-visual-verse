@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
 import { useCategories, Category } from '@/hooks/useCategories';
 import { useToast } from '@/hooks/use-toast';
@@ -14,7 +13,15 @@ interface CategoryManagerProps {
 const CategoryManager = ({ type }: CategoryManagerProps) => {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  const { categories, createCategory, deleteCategory, isCreating, isDeleting } = useCategories(type);
+  const { 
+    categories, 
+    createCategory, 
+    deleteCategory, 
+    updateCategorySortOrder,
+    isCreating, 
+    isDeleting,
+    isUpdating 
+  } = useCategories(type);
   const { toast } = useToast();
 
   const handleAddCategory = async () => {
@@ -75,17 +82,63 @@ const CategoryManager = ({ type }: CategoryManagerProps) => {
     }
   };
 
-  const moveCategoryUp = (index: number) => {
+  const moveCategoryUp = async (index: number) => {
     if (index > 0) {
-      // Esta funcionalidade seria implementada com uma coluna sort_order na tabela
-      console.log('Move category up:', categories[index].name);
+      const currentCategory = categories[index];
+      const previousCategory = categories[index - 1];
+      
+      try {
+        // Swap sort orders
+        await updateCategorySortOrder({ 
+          id: currentCategory.id, 
+          newSortOrder: previousCategory.sort_order 
+        });
+        await updateCategorySortOrder({ 
+          id: previousCategory.id, 
+          newSortOrder: currentCategory.sort_order 
+        });
+        
+        toast({
+          title: "Sucesso",
+          description: "Ordem da categoria alterada"
+        });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Falha ao alterar ordem da categoria",
+          variant: "destructive"
+        });
+      }
     }
   };
 
-  const moveCategoryDown = (index: number) => {
+  const moveCategoryDown = async (index: number) => {
     if (index < categories.length - 1) {
-      // Esta funcionalidade seria implementada com uma coluna sort_order na tabela
-      console.log('Move category down:', categories[index].name);
+      const currentCategory = categories[index];
+      const nextCategory = categories[index + 1];
+      
+      try {
+        // Swap sort orders
+        await updateCategorySortOrder({ 
+          id: currentCategory.id, 
+          newSortOrder: nextCategory.sort_order 
+        });
+        await updateCategorySortOrder({ 
+          id: nextCategory.id, 
+          newSortOrder: currentCategory.sort_order 
+        });
+        
+        toast({
+          title: "Sucesso",
+          description: "Ordem da categoria alterada"
+        });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Falha ao alterar ordem da categoria",
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -162,7 +215,7 @@ const CategoryManager = ({ type }: CategoryManagerProps) => {
               <div className="flex gap-1">
                 <Button
                   onClick={() => moveCategoryUp(index)}
-                  disabled={index === 0}
+                  disabled={index === 0 || isUpdating}
                   variant="ghost"
                   size="sm"
                   className="text-white/60 hover:text-white hover:bg-white/10 w-8 h-8 p-0"
@@ -171,7 +224,7 @@ const CategoryManager = ({ type }: CategoryManagerProps) => {
                 </Button>
                 <Button
                   onClick={() => moveCategoryDown(index)}
-                  disabled={index === categories.length - 1}
+                  disabled={index === categories.length - 1 || isUpdating}
                   variant="ghost"
                   size="sm"
                   className="text-white/60 hover:text-white hover:bg-white/10 w-8 h-8 p-0"

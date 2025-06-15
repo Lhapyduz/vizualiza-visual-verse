@@ -29,10 +29,16 @@ const ImageZoom = ({ src, alt, className }: ImageZoomProps) => {
       </div>
 
       {isZoomed && (
-        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="relative max-w-full max-h-full">
+        <div 
+          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={closeZoom}
+        >
+          <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center">
             <Button
-              onClick={closeZoom}
+              onClick={(e) => {
+                e.stopPropagation();
+                closeZoom();
+              }}
               variant="outline"
               size="icon"
               className="absolute top-4 right-4 z-10 bg-black/50 border-white/20 hover:bg-black/70"
@@ -42,7 +48,8 @@ const ImageZoom = ({ src, alt, className }: ImageZoomProps) => {
             <img
               src={src}
               alt={alt}
-              className="max-w-full max-h-[90vh] object-contain"
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
             />
           </div>
         </div>

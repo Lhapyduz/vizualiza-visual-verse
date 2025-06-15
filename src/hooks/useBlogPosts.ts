@@ -44,19 +44,20 @@ export const useBlogPosts = () => {
     queryKey: ['blog-posts'],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from('blog_posts')
-          .select('*')
-          .order('created_at', { ascending: false });
+        // Try Supabase first
+        const response = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/blog_posts?select=*&order=created_at.desc`, {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0'
+          }
+        });
 
-        if (error) {
-          console.log('Supabase error, falling back to localStorage:', error);
-          // Fallback to localStorage if Supabase fails
-          const localPosts = localStorage.getItem('vizualiza-blog-posts');
-          return localPosts ? JSON.parse(localPosts) : [];
+        if (response.ok) {
+          const data = await response.json();
+          return data as BlogPost[];
+        } else {
+          throw new Error('Supabase fetch failed');
         }
-
-        return data as BlogPost[];
       } catch (err) {
         console.log('Error fetching blog posts, using localStorage fallback:', err);
         const localPosts = localStorage.getItem('vizualiza-blog-posts');
@@ -69,14 +70,24 @@ export const useBlogPosts = () => {
   const createPostMutation = useMutation({
     mutationFn: async (postData: CreateBlogPostData) => {
       try {
-        const { data, error } = await supabase
-          .from('blog_posts')
-          .insert([postData])
-          .select()
-          .single();
+        // Try Supabase first
+        const response = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/blog_posts`, {
+          method: 'POST',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify(postData)
+        });
 
-        if (error) throw error;
-        return data;
+        if (response.ok) {
+          const [data] = await response.json();
+          return data;
+        } else {
+          throw new Error('Supabase insert failed');
+        }
       } catch (error) {
         console.log('Supabase error, saving to localStorage:', error);
         // Fallback to localStorage
@@ -114,12 +125,20 @@ export const useBlogPosts = () => {
   const updatePostMutation = useMutation({
     mutationFn: async ({ id, ...postData }: Partial<BlogPost> & { id: string }) => {
       try {
-        const { error } = await supabase
-          .from('blog_posts')
-          .update(postData)
-          .eq('id', id);
+        // Try Supabase first
+        const response = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/blog_posts?id=eq.${id}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(postData)
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error('Supabase update failed');
+        }
       } catch (error) {
         console.log('Supabase error, updating localStorage:', error);
         // Fallback to localStorage
@@ -151,12 +170,17 @@ export const useBlogPosts = () => {
   const deletePostMutation = useMutation({
     mutationFn: async (id: string) => {
       try {
-        const { error } = await supabase
-          .from('blog_posts')
-          .delete()
-          .eq('id', id);
+        const response = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/blog_posts?id=eq.${id}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0'
+          }
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error('Supabase delete failed');
+        }
       } catch (error) {
         console.log('Supabase error, deleting from localStorage:', error);
         // Fallback to localStorage

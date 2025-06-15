@@ -133,13 +133,22 @@ const AdminPanel = ({
     const projectData = {
       ...projectFormData,
       featured_image: projectImages[0] || '',
-      images: projectImages
+      images: projectImages.map((url, index) => ({ 
+        id: Date.now().toString() + index, 
+        project_id: editingProjectState?.id || '',
+        image_url: url, 
+        sort_order: index 
+      }))
     };
 
     if (editingProjectState) {
       updateProject({ id: editingProjectState.id, ...projectData });
     } else {
-      createProject(projectData);
+      createProject({
+        ...projectFormData,
+        featured_image: projectImages[0] || '',
+        images: projectImages
+      });
     }
 
     resetProjectForm();

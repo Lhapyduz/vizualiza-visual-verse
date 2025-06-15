@@ -48,30 +48,23 @@ export const useProjects = () => {
     queryKey: ['projects'],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from('projects')
-          .select(`
-            *,
-            project_images (
-              id,
-              image_url,
-              alt_text,
-              sort_order
-            )
-          `)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.log('Supabase error, falling back to localStorage:', error);
-          // Fallback to localStorage if Supabase fails
-          const localProjects = localStorage.getItem('vizualiza-projects');
-          return localProjects ? JSON.parse(localProjects) : [];
+        // Try Supabase first
+        const response = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/projects?select=*,project_images(*)&order=created_at.desc`, {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0'
+          }
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          return (data || []).map((project: any) => ({
+            ...project,
+            images: project.project_images || []
+          })) as Project[];
+        } else {
+          throw new Error('Supabase fetch failed');
         }
-
-        return (data || []).map(project => ({
-          ...project,
-          images: project.project_images || []
-        })) as Project[];
       } catch (err) {
         console.log('Error fetching projects, using localStorage fallback:', err);
         const localProjects = localStorage.getItem('vizualiza-projects');
@@ -87,30 +80,43 @@ export const useProjects = () => {
         const { images, ...projectInfo } = projectData;
         
         // Try Supabase first
-        const { data: project, error: projectError } = await supabase
-          .from('projects')
-          .insert([projectInfo])
-          .select()
-          .single();
+        const response = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/projects`, {
+          method: 'POST',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify(projectInfo)
+        });
 
-        if (projectError) throw projectError;
+        if (response.ok) {
+          const [project] = await response.json();
+          
+          // Insert images if any
+          if (images && images.length > 0) {
+            const imageData = images.map((url, index) => ({
+              project_id: project.id,
+              image_url: url,
+              sort_order: index
+            }));
 
-        // Insert images if any
-        if (images && images.length > 0) {
-          const imageData = images.map((url, index) => ({
-            project_id: project.id,
-            image_url: url,
-            sort_order: index
-          }));
+            await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/project_images`, {
+              method: 'POST',
+              headers: {
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(imageData)
+            });
+          }
 
-          const { error: imagesError } = await supabase
-            .from('project_images')
-            .insert(imageData);
-
-          if (imagesError) throw imagesError;
+          return project;
+        } else {
+          throw new Error('Supabase insert failed');
         }
-
-        return project;
       } catch (error) {
         console.log('Supabase error, saving to localStorage:', error);
         // Fallback to localStorage
@@ -151,35 +157,49 @@ export const useProjects = () => {
         const { images, ...projectInfo } = projectData;
         
         // Try Supabase first
-        const { error: projectError } = await supabase
-          .from('projects')
-          .update(projectInfo)
-          .eq('id', id);
+        const response = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/projects?id=eq.${id}`, {
+          method: 'PATCH',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(projectInfo)
+        });
 
-        if (projectError) throw projectError;
+        if (response.ok) {
+          // Handle images update if provided
+          if (images !== undefined) {
+            // Delete existing images
+            await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/project_images?project_id=eq.${id}`, {
+              method: 'DELETE',
+              headers: {
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0'
+              }
+            });
 
-        // Handle images update if provided
-        if (images !== undefined) {
-          // Delete existing images
-          await supabase
-            .from('project_images')
-            .delete()
-            .eq('project_id', id);
+            // Insert new images
+            if (images.length > 0) {
+              const imageData = images.map((image: any, index: number) => ({
+                project_id: id,
+                image_url: typeof image === 'string' ? image : image.image_url,
+                sort_order: index
+              }));
 
-          // Insert new images
-          if (images.length > 0) {
-            const imageData = images.map((image, index) => ({
-              project_id: id,
-              image_url: typeof image === 'string' ? image : image.image_url,
-              sort_order: index
-            }));
-
-            const { error: imagesError } = await supabase
-              .from('project_images')
-              .insert(imageData);
-
-            if (imagesError) throw imagesError;
+              await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/project_images`, {
+                method: 'POST',
+                headers: {
+                  'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+                  'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(imageData)
+              });
+            }
           }
+        } else {
+          throw new Error('Supabase update failed');
         }
       } catch (error) {
         console.log('Supabase error, updating localStorage:', error);
@@ -212,12 +232,17 @@ export const useProjects = () => {
   const deleteProjectMutation = useMutation({
     mutationFn: async (id: string) => {
       try {
-        const { error } = await supabase
-          .from('projects')
-          .delete()
-          .eq('id', id);
+        const response = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/projects?id=eq.${id}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0'
+          }
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error('Supabase delete failed');
+        }
       } catch (error) {
         console.log('Supabase error, deleting from localStorage:', error);
         // Fallback to localStorage

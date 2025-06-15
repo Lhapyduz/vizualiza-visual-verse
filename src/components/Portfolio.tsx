@@ -51,7 +51,7 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
   // Get all available tags
   const availableTags = useMemo(() => {
     const allTags = projects.flatMap(project => project.tags || []);
-    return [...new Set(allTags)];
+    return [...new Set(allTags.filter(tag => typeof tag === 'string'))];
   }, [projects]);
 
   // Filter projects based on search and filters
@@ -72,7 +72,7 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
       filtered = filtered.filter(project => 
         project.title.toLowerCase().includes(term) ||
         project.description.toLowerCase().includes(term) ||
-        (project.tags || []).some(tag => tag.toLowerCase().includes(term))
+        (project.tags || []).some(tag => String(tag).toLowerCase().includes(term))
       );
     }
 
@@ -169,7 +169,10 @@ const Portfolio = ({ isAdmin = false, onEditProject }: PortfolioProps) => {
                 className="group bg-white/5 rounded-lg overflow-hidden backdrop-blur-sm hover:bg-white/10 transition-all duration-300 cursor-pointer"
                 whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => openProjectModal(project)}
+                onClick={() => openProjectModal({
+                  ...project,
+                  image: project.featured_image // Add image property for modal compatibility
+                })}
               >
                 <div className="relative overflow-hidden">
                   <LazyLoadImage 

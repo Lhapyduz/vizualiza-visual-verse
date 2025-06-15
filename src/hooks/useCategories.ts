@@ -24,38 +24,28 @@ export const useCategories = (type?: 'project' | 'blog') => {
     queryKey: ['categories', type],
     queryFn: async () => {
       try {
-        let query = supabase
-          .from('categories')
-          .select('*')
-          .order('name');
-
+        // Try Supabase first
+        let url = `https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/categories?select=*&order=name`;
         if (type) {
-          query = query.eq('type', type);
+          url += `&type=eq.${type}`;
         }
 
-        const { data, error } = await query;
+        const response = await fetch(url, {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0'
+          }
+        });
 
-        if (error) {
-          console.log('Supabase error, using default categories:', error);
-          // Fallback to default categories
-          const defaultCategories = [
-            { id: '1', name: 'Identidade Visual', type: 'project', created_at: new Date().toISOString() },
-            { id: '2', name: 'Design Gráfico', type: 'project', created_at: new Date().toISOString() },
-            { id: '3', name: 'Fotografia', type: 'project', created_at: new Date().toISOString() },
-            { id: '4', name: 'Web Design', type: 'project', created_at: new Date().toISOString() },
-            { id: '5', name: 'Design', type: 'blog', created_at: new Date().toISOString() },
-            { id: '6', name: 'Tecnologia', type: 'blog', created_at: new Date().toISOString() },
-            { id: '7', name: 'Branding', type: 'blog', created_at: new Date().toISOString() },
-            { id: '8', name: 'Tendências', type: 'blog', created_at: new Date().toISOString() },
-            { id: '9', name: 'Tutoriais', type: 'blog', created_at: new Date().toISOString() }
-          ] as Category[];
-          
-          return type ? defaultCategories.filter(cat => cat.type === type) : defaultCategories;
+        if (response.ok) {
+          const data = await response.json();
+          return data as Category[];
+        } else {
+          throw new Error('Supabase fetch failed');
         }
-
-        return data as Category[];
       } catch (err) {
-        console.log('Error fetching categories, using defaults:', err);
+        console.log('Supabase error, using default categories:', err);
+        // Fallback to default categories
         const defaultCategories = [
           { id: '1', name: 'Identidade Visual', type: 'project', created_at: new Date().toISOString() },
           { id: '2', name: 'Design Gráfico', type: 'project', created_at: new Date().toISOString() },
@@ -77,14 +67,23 @@ export const useCategories = (type?: 'project' | 'blog') => {
   const createCategoryMutation = useMutation({
     mutationFn: async ({ name, type }: { name: string; type: 'project' | 'blog' }) => {
       try {
-        const { data, error } = await supabase
-          .from('categories')
-          .insert([{ name, type }])
-          .select()
-          .single();
+        const response = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/categories`, {
+          method: 'POST',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation'
+          },
+          body: JSON.stringify({ name, type })
+        });
 
-        if (error) throw error;
-        return data;
+        if (response.ok) {
+          const [data] = await response.json();
+          return data;
+        } else {
+          throw new Error('Supabase insert failed');
+        }
       } catch (error) {
         console.log('Supabase error creating category:', error);
         // For now, just return a mock object as we'll use static categories
@@ -112,12 +111,17 @@ export const useCategories = (type?: 'project' | 'blog') => {
   const deleteCategoryMutation = useMutation({
     mutationFn: async (id: string) => {
       try {
-        const { error } = await supabase
-          .from('categories')
-          .delete()
-          .eq('id', id);
+        const response = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/categories?id=eq.${id}`, {
+          method: 'DELETE',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0'
+          }
+        });
 
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error('Supabase delete failed');
+        }
       } catch (error) {
         console.log('Supabase error deleting category:', error);
         // For static categories, we don't need to do anything

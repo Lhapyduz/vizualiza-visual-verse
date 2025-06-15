@@ -70,7 +70,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
   // Get all available tags
   const availableTags = useMemo(() => {
     const allTags = posts.flatMap(post => post.tags || []);
-    return [...new Set(allTags)];
+    return [...new Set(allTags.filter(tag => typeof tag === 'string'))];
   }, [posts]);
 
   // Filter posts based on search and filters
@@ -91,7 +91,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
       filtered = filtered.filter(post => 
         post.title.toLowerCase().includes(term) ||
         post.excerpt.toLowerCase().includes(term) ||
-        (post.tags || []).some(tag => tag.toLowerCase().includes(term))
+        (post.tags || []).some(tag => String(tag).toLowerCase().includes(term))
       );
     }
 
@@ -199,7 +199,11 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                 className="group bg-white/5 rounded-lg overflow-hidden backdrop-blur-sm hover:bg-white/10 transition-all duration-300 cursor-pointer"
                 whileHover={{ scale: 1.05, y: -5 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => openPostModal(post)}
+                onClick={() => openPostModal({
+                  ...post,
+                  image: post.featured_image, // Add image property for modal compatibility
+                  readTime: post.read_time // Add readTime property for modal compatibility
+                })}
               >
                 <div className="relative overflow-hidden">
                   <LazyLoadImage 

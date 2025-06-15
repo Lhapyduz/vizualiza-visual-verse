@@ -9,7 +9,143 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      blog_posts: {
+        Row: {
+          author: string
+          category: string
+          content: string
+          created_at: string
+          date: string
+          excerpt: string
+          featured_image: string | null
+          id: string
+          read_time: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author: string
+          category: string
+          content: string
+          created_at?: string
+          date: string
+          excerpt: string
+          featured_image?: string | null
+          id?: string
+          read_time: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          category?: string
+          content?: string
+          created_at?: string
+          date?: string
+          excerpt?: string
+          featured_image?: string | null
+          id?: string
+          read_time?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          type?: string
+        }
+        Relationships: []
+      }
+      project_images: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          id: string
+          image_url: string
+          project_id: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          project_id?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          project_id?: string | null
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_images_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          category: string
+          created_at: string
+          date: string
+          description: string
+          featured_image: string | null
+          id: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          date: string
+          description: string
+          featured_image?: string | null
+          id?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string
+          featured_image?: string | null
+          id?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

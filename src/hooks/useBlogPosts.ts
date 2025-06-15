@@ -30,6 +30,7 @@ interface CreateBlogPostData {
   read_time: string;
   tags: string[];
   featured_image?: string;
+  image: string; // Add the image property
   date: string;
 }
 

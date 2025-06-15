@@ -88,7 +88,7 @@ const Analytics = () => {
                 <BarChart3 className="w-16 h-16 mx-auto mb-4 opacity-50" />
                 <p>Dados de analytics serão exibidos aqui</p>
               </div>
-            </CardContent>
+            </div>
           </CardContent>
         </Card>
       </div>

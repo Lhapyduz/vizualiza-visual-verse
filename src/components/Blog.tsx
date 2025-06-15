@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
-import { Calendar, Tag, Clock, User } from 'lucide-react';
+import { Calendar, Tag, Clock, User, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import BlogModal from './BlogModal';
 import AdvancedSearch from './AdvancedSearch';
@@ -58,6 +58,25 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
     setSelectedPost(null);
   };
 
+  const handleCreatePost = () => {
+    const newPost: BlogPost = {
+      id: Date.now().toString(),
+      title: 'Novo Post',
+      excerpt: 'Descrição do novo post...',
+      content: 'Conteúdo detalhado do post...',
+      image: 'https://images.unsplash.com/photo-1586953209889-5ce391d8cd9b?w=600&h=400&fit=crop',
+      category: 'Design',
+      date: new Date().toISOString().split('T')[0],
+      author: 'Gregory Vizualiza',
+      readTime: '5 min',
+      tags: ['Novo', 'Post']
+    };
+    
+    if (onEditPost) {
+      onEditPost(newPost);
+    }
+  };
+
   useEffect(() => {
     // Posts de exemplo
     const samplePosts: BlogPost[] = [
@@ -69,7 +88,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
         image: 'https://images.unsplash.com/photo-1560472355-536de3962603?w=600&h=400&fit=crop',
         category: 'Tendências',
         date: '2024-06-10',
-        author: 'Ana Silva',
+        author: 'Gregory Vizualiza',
         readTime: '5 min',
         tags: ['Design', 'Tendências', '2024']
       },
@@ -81,7 +100,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
         image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=600&h=400&fit=crop',
         category: 'Branding',
         date: '2024-06-05',
-        author: 'Carlos Mendes',
+        author: 'Gregory Vizualiza',
         readTime: '8 min',
         tags: ['Branding', 'Identidade', 'Logo']
       },
@@ -93,7 +112,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
         image: 'https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=600&h=400&fit=crop',
         category: 'Tecnologia',
         date: '2024-05-28',
-        author: 'Maria Santos',
+        author: 'Gregory Vizualiza',
         readTime: '6 min',
         tags: ['Ferramentas', 'Workflow', 'Produtividade']
       },
@@ -105,7 +124,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
         image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&h=400&fit=crop',
         category: 'Design',
         date: '2024-05-20',
-        author: 'João Pedro',
+        author: 'Gregory Vizualiza',
         readTime: '7 min',
         tags: ['Cores', 'Psicologia', 'Design']
       }
@@ -179,10 +198,21 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
       <div className="max-w-7xl mx-auto">
         <ScrollAnimation direction="up">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="text-white">Nosso </span>
-              <span className="bg-vizualiza-gradient bg-clip-text text-transparent">Blog</span>
-            </h2>
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <h2 className="text-4xl md:text-5xl font-bold">
+                <span className="text-white">Nosso </span>
+                <span className="bg-vizualiza-gradient bg-clip-text text-transparent">Blog</span>
+              </h2>
+              {isAdmin && (
+                <Button
+                  onClick={handleCreatePost}
+                  className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Novo Post
+                </Button>
+              )}
+            </div>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
               Descubra insights, tendências e dicas do mundo do design através 
               dos nossos artigos especializados.

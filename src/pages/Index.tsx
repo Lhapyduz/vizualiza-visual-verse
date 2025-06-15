@@ -26,11 +26,25 @@ interface Project {
   tags: string[];
 }
 
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  image: string;
+  category: string;
+  date: string;
+  author: string;
+  readTime: string;
+  tags: string[];
+}
+
 const Index = () => {
   const [showAdmin, setShowAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
 
   useEffect(() => {
     // Verificar se admin está logado
@@ -104,6 +118,13 @@ const Index = () => {
 
   const handleEditProject = (project: Project) => {
     setEditingProject(project);
+    setEditingPost(null);
+    setShowAdmin(true);
+  };
+
+  const handleEditPost = (post: BlogPost) => {
+    setEditingPost(post);
+    setEditingProject(null);
     setShowAdmin(true);
   };
 
@@ -144,7 +165,9 @@ const Index = () => {
         <AdminPanel 
           onClose={() => setShowAdmin(false)}
           editingProject={editingProject}
+          editingPost={editingPost}
           onClearEditingProject={() => setEditingProject(null)}
+          onClearEditingPost={() => setEditingPost(null)}
         />
       ) : (
         <motion.div
@@ -159,7 +182,10 @@ const Index = () => {
             isAdmin={isAdminLoggedIn}
             onEditProject={handleEditProject}
           />
-          <Blog />
+          <Blog 
+            isAdmin={isAdminLoggedIn}
+            onEditPost={handleEditPost}
+          />
           <div className="py-20 px-4 bg-vizualiza-bg-dark">
             <div className="max-w-4xl mx-auto">
               <NewsletterSignup />

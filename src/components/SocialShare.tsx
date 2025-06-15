@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Share2, Facebook, Twitter, Linkedin, Instagram, Copy } from 'lucide-react';
+import { Share2, Facebook, Twitter, Linkedin, Copy, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -57,9 +57,13 @@ const SocialShare = ({
     whatsapp: `https://wa.me/?text=${encodeURIComponent(`${title} - ${url}`)}`
   };
 
+  const openSocialShare = (platform: keyof typeof shareUrls) => {
+    window.open(shareUrls[platform], '_blank', 'width=600,height=400');
+  };
+
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      {navigator.share ? (
+      {navigator.share && (
         <Button
           onClick={handleNativeShare}
           variant="outline"
@@ -69,42 +73,57 @@ const SocialShare = ({
           <Share2 className="w-4 h-4 mr-2" />
           Compartilhar
         </Button>
-      ) : (
-        <>
-          <Button
-            onClick={() => window.open(shareUrls.facebook, '_blank')}
-            variant="outline"
-            size="icon"
-            className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
-          >
-            <Facebook className="w-4 h-4" />
-          </Button>
-          <Button
-            onClick={() => window.open(shareUrls.twitter, '_blank')}
-            variant="outline"
-            size="icon"
-            className="border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white"
-          >
-            <Twitter className="w-4 h-4" />
-          </Button>
-          <Button
-            onClick={() => window.open(shareUrls.linkedin, '_blank')}
-            variant="outline"
-            size="icon"
-            className="border-blue-700 text-blue-700 hover:bg-blue-700 hover:text-white"
-          >
-            <Linkedin className="w-4 h-4" />
-          </Button>
-          <Button
-            onClick={copyToClipboard}
-            variant="outline"
-            size="icon"
-            className="border-gray-500 text-gray-500 hover:bg-gray-500 hover:text-white"
-          >
-            <Copy className="w-4 h-4" />
-          </Button>
-        </>
       )}
+      
+      <Button
+        onClick={() => openSocialShare('facebook')}
+        variant="outline"
+        size="icon"
+        className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+        title="Compartilhar no Facebook"
+      >
+        <Facebook className="w-4 h-4" />
+      </Button>
+      
+      <Button
+        onClick={() => openSocialShare('twitter')}
+        variant="outline"
+        size="icon"
+        className="border-blue-400 text-blue-400 hover:bg-blue-400 hover:text-white"
+        title="Compartilhar no Twitter"
+      >
+        <Twitter className="w-4 h-4" />
+      </Button>
+      
+      <Button
+        onClick={() => openSocialShare('linkedin')}
+        variant="outline"
+        size="icon"
+        className="border-blue-700 text-blue-700 hover:bg-blue-700 hover:text-white"
+        title="Compartilhar no LinkedIn"
+      >
+        <Linkedin className="w-4 h-4" />
+      </Button>
+      
+      <Button
+        onClick={() => openSocialShare('whatsapp')}
+        variant="outline"
+        size="icon"
+        className="border-green-600 text-green-600 hover:bg-green-600 hover:text-white"
+        title="Compartilhar no WhatsApp"
+      >
+        <MessageCircle className="w-4 h-4" />
+      </Button>
+      
+      <Button
+        onClick={copyToClipboard}
+        variant="outline"
+        size="icon"
+        className="border-gray-500 text-gray-500 hover:bg-gray-500 hover:text-white"
+        title="Copiar link"
+      >
+        <Copy className="w-4 h-4" />
+      </Button>
     </div>
   );
 };

@@ -10,25 +10,25 @@ const Contact = () => {
     {
       icon: Mail,
       title: 'Email',
-      content: 'contato@vizualiza.com.br',
-      link: 'mailto:contato@vizualiza.com.br'
+      content: 'gregory@vizualiza.com.br',
+      link: 'mailto:gregory@vizualiza.com.br'
     },
     {
       icon: Phone,
       title: 'Telefone',
-      content: '(11) 99999-9999',
-      link: 'tel:+5511999999999'
+      content: '(41) 99561-8116',
+      link: 'tel:+5541995618116'
     },
     {
       icon: MapPin,
       title: 'Localização',
-      content: 'São Paulo, SP',
-      link: 'https://maps.google.com/?q=São+Paulo,+SP'
+      content: 'Guaratuba, PR',
+      link: 'https://maps.google.com/?q=Guaratuba,+PR'
     },
     {
       icon: Clock,
       title: 'Horário',
-      content: 'Seg - Sex: 9h às 18h',
+      content: 'Todos os dias',
       link: null
     }
   ];

@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { Menu, X, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import ThemeToggle from './ThemeToggle';
 
 interface NavbarProps {
   onAdminClick: () => void;
@@ -17,6 +16,7 @@ const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps
     { name: 'Início', href: '#hero' },
     { name: 'Sobre', href: '#about' },
     { name: 'Portfólio', href: '#portfolio' },
+    { name: 'Blog', href: '#blog' },
     { name: 'Contato', href: '#contact' },
   ];
 
@@ -51,7 +51,6 @@ const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps
                 </button>
               ))}
               <div className="flex items-center space-x-2 ml-4">
-                <ThemeToggle />
                 <Button
                   onClick={onAdminClick}
                   variant="outline"
@@ -103,7 +102,6 @@ const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps
               </button>
             ))}
             <div className="flex flex-col space-y-2 px-3 pt-2">
-              <ThemeToggle />
               <Button
                 onClick={onAdminClick}
                 variant="outline"

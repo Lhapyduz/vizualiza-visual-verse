@@ -71,14 +71,8 @@ const VoiceCommands = () => {
     } else if (command.includes('contato')) {
       document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
       speak('Navegando para a seção de contato');
-    } else if (command.includes('tema escuro') || command.includes('modo escuro')) {
-      // Implementar mudança para tema escuro
-      speak('Alterando para tema escuro');
-    } else if (command.includes('tema claro') || command.includes('modo claro')) {
-      // Implementar mudança para tema claro
-      speak('Alterando para tema claro');
     } else if (command.includes('help') || command.includes('ajuda')) {
-      speak('Comandos disponíveis: início, sobre, portfólio, blog, contato, tema escuro, tema claro');
+      speak('Comandos disponíveis: início, sobre, portfólio, blog, contato');
     } else {
       speak('Comando não reconhecido. Diga "ajuda" para ver os comandos disponíveis');
     }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Plus, Edit, Trash2, Save, Upload, Image } from 'lucide-react';
+import { X, Plus, Edit, Trash2, Save, Upload, Image, BookOpen, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,7 +9,9 @@ import { useToast } from '@/hooks/use-toast';
 interface AdminPanelProps {
   onClose: () => void;
   editingProject?: Project | null;
+  editingPost?: BlogPost | null;
   onClearEditingProject?: () => void;
+  onClearEditingPost?: () => void;
 }
 
 interface Project {
@@ -22,14 +24,37 @@ interface Project {
   tags: string[];
 }
 
-const AdminPanel = ({ onClose, editingProject, onClearEditingProject }: AdminPanelProps) => {
+interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  image: string;
+  category: string;
+  date: string;
+  author: string;
+  readTime: string;
+  tags: string[];
+}
+
+const AdminPanel = ({ 
+  onClose, 
+  editingProject, 
+  editingPost,
+  onClearEditingProject, 
+  onClearEditingPost 
+}: AdminPanelProps) => {
+  const [activeTab, setActiveTab] = useState<'projects' | 'posts'>('projects');
   const [projects, setProjects] = useState<Project[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [editingProjectState, setEditingProjectState] = useState<Project | null>(null);
+  const [editingPostState, setEditingPostState] = useState<BlogPost | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [projectImages, setProjectImages] = useState<string[]>([]);
   const { toast } = useToast();
 
-  const categories = ['Identidade Visual', 'Design Gráfico', 'Fotografia', 'Web Design'];
+  const projectCategories = ['Identidade Visual', 'Design Gráfico', 'Fotografia', 'Web Design'];
+  const postCategories = ['Design', 'Tecnologia', 'Branding', 'Tendências', 'Tutoriais'];
 
   const initialProject: Omit<Project, 'id'> = {
     title: '',
@@ -40,15 +65,30 @@ const AdminPanel = ({ onClose, editingProject, onClearEditingProject }: AdminPan
     tags: []
   };
 
-  const [formData, setFormData] = useState<Omit<Project, 'id'>>(initialProject);
+  const initialPost: Omit<BlogPost, 'id'> = {
+    title: '',
+    excerpt: '',
+    content: '',
+    image: '',
+    category: '',
+    date: new Date().toISOString().split('T')[0],
+    author: 'Gregory Vizualiza',
+    readTime: '5 min',
+    tags: []
+  };
+
+  const [projectFormData, setProjectFormData] = useState<Omit<Project, 'id'>>(initialProject);
+  const [postFormData, setPostFormData] = useState<Omit<BlogPost, 'id'>>(initialPost);
 
   useEffect(() => {
     loadProjects();
+    loadPosts();
     
-    // Se há um projeto sendo editado, configurar o formulário
+    // Se há um projeto sendo editado
     if (editingProject) {
+      setActiveTab('projects');
       setEditingProjectState(editingProject);
-      setFormData({
+      setProjectFormData({
         title: editingProject.title,
         description: editingProject.description,
         image: editingProject.image,
@@ -63,7 +103,29 @@ const AdminPanel = ({ onClose, editingProject, onClearEditingProject }: AdminPan
         onClearEditingProject();
       }
     }
-  }, [editingProject, onClearEditingProject]);
+
+    // Se há um post sendo editado
+    if (editingPost) {
+      setActiveTab('posts');
+      setEditingPostState(editingPost);
+      setPostFormData({
+        title: editingPost.title,
+        excerpt: editingPost.excerpt,
+        content: editingPost.content,
+        image: editingPost.image,
+        category: editingPost.category,
+        date: editingPost.date,
+        author: editingPost.author,
+        readTime: editingPost.readTime,
+        tags: editingPost.tags
+      });
+      setIsCreating(true);
+      
+      if (onClearEditingPost) {
+        onClearEditingPost();
+      }
+    }
+  }, [editingProject, editingPost, onClearEditingProject, onClearEditingPost]);
 
   const loadProjects = () => {
     const savedProjects = localStorage.getItem('vizualiza-projects');
@@ -72,19 +134,30 @@ const AdminPanel = ({ onClose, editingProject, onClearEditingProject }: AdminPan
     }
   };
 
+  const loadPosts = () => {
+    const savedPosts = localStorage.getItem('vizualiza-posts');
+    if (savedPosts) {
+      setPosts(JSON.parse(savedPosts));
+    }
+  };
+
   const saveProjects = (updatedProjects: Project[]) => {
     localStorage.setItem('vizualiza-projects', JSON.stringify(updatedProjects));
     setProjects(updatedProjects);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const savePosts = (updatedPosts: BlogPost[]) => {
+    localStorage.setItem('vizualiza-posts', JSON.stringify(updatedPosts));
+    setPosts(updatedPosts);
+  };
+
+  const handleProjectSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (editingProjectState) {
-      // Editar projeto existente
       const updatedProjects = projects.map(p => 
         p.id === editingProjectState.id 
-          ? { ...formData, id: editingProjectState.id }
+          ? { ...projectFormData, id: editingProjectState.id }
           : p
       );
       saveProjects(updatedProjects);
@@ -93,9 +166,8 @@ const AdminPanel = ({ onClose, editingProject, onClearEditingProject }: AdminPan
         description: "As alterações foram salvas com sucesso.",
       });
     } else {
-      // Criar novo projeto
       const newProject: Project = {
-        ...formData,
+        ...projectFormData,
         id: Date.now().toString()
       };
       const updatedProjects = [...projects, newProject];
@@ -106,10 +178,40 @@ const AdminPanel = ({ onClose, editingProject, onClearEditingProject }: AdminPan
       });
     }
 
-    resetForm();
+    resetProjectForm();
   };
 
-  const handleDelete = (id: string) => {
+  const handlePostSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (editingPostState) {
+      const updatedPosts = posts.map(p => 
+        p.id === editingPostState.id 
+          ? { ...postFormData, id: editingPostState.id }
+          : p
+      );
+      savePosts(updatedPosts);
+      toast({
+        title: "Post atualizado!",
+        description: "As alterações foram salvas com sucesso.",
+      });
+    } else {
+      const newPost: BlogPost = {
+        ...postFormData,
+        id: Date.now().toString()
+      };
+      const updatedPosts = [...posts, newPost];
+      savePosts(updatedPosts);
+      toast({
+        title: "Post criado!",
+        description: "Novo post adicionado ao blog.",
+      });
+    }
+
+    resetPostForm();
+  };
+
+  const handleDeleteProject = (id: string) => {
     const updatedProjects = projects.filter(p => p.id !== id);
     saveProjects(updatedProjects);
     toast({
@@ -118,9 +220,18 @@ const AdminPanel = ({ onClose, editingProject, onClearEditingProject }: AdminPan
     });
   };
 
-  const handleEdit = (project: Project) => {
+  const handleDeletePost = (id: string) => {
+    const updatedPosts = posts.filter(p => p.id !== id);
+    savePosts(updatedPosts);
+    toast({
+      title: "Post removido!",
+      description: "O post foi excluído do blog.",
+    });
+  };
+
+  const handleEditProject = (project: Project) => {
     setEditingProjectState(project);
-    setFormData({
+    setProjectFormData({
       title: project.title,
       description: project.description,
       image: project.image,
@@ -132,72 +243,56 @@ const AdminPanel = ({ onClose, editingProject, onClearEditingProject }: AdminPan
     setIsCreating(true);
   };
 
-  const resetForm = () => {
-    setFormData(initialProject);
+  const handleEditPost = (post: BlogPost) => {
+    setEditingPostState(post);
+    setPostFormData({
+      title: post.title,
+      excerpt: post.excerpt,
+      content: post.content,
+      image: post.image,
+      category: post.category,
+      date: post.date,
+      author: post.author,
+      readTime: post.readTime,
+      tags: post.tags
+    });
+    setIsCreating(true);
+  };
+
+  const resetProjectForm = () => {
+    setProjectFormData(initialProject);
     setEditingProjectState(null);
     setProjectImages([]);
     setIsCreating(false);
   };
 
-  const handleTagsChange = (value: string) => {
-    // Se o último caractere for uma vírgula, vamos criar uma tag imediatamente
-    if (value.endsWith(',')) {
-      // Remover a vírgula do final e adicionar um espaço para a próxima tag
-      const newValue = value.slice(0, -1) + '; ';
-      
-      // Dividir por ponto e vírgula ou vírgula
-      const tags = newValue
-        .replace(/,/g, ';')
-        .split(';')
-        .map(tag => tag.trim())
-        .filter(tag => tag !== '');
-      
-      // Atualizar o estado com as novas tags
-      setFormData(prev => ({ ...prev, tags }));
-      
-      // Simular um evento para atualizar o campo de input com o novo valor
-      setTimeout(() => {
-        const input = document.querySelector('input[placeholder="Tags (separadas por vírgula ou ponto e vírgula)"]') as HTMLInputElement;
-        if (input) {
-          input.value = newValue;
-          input.focus();
-          // Posicionar o cursor no final do texto
-          input.selectionStart = input.selectionEnd = input.value.length;
-        }
-      }, 0);
-    } else {
-      // Comportamento normal para outros casos
-      const tags = value
-        .replace(/,/g, ';')
-        .split(';')
-        .filter(tag => tag.trim() !== '');
-      setFormData(prev => ({ ...prev, tags }));
-    }
+  const resetPostForm = () => {
+    setPostFormData(initialPost);
+    setEditingPostState(null);
+    setIsCreating(false);
   };
 
-  const addImageUrl = () => {
-    const newImageUrl = prompt('Digite a URL da nova imagem:');
-    if (newImageUrl && newImageUrl.trim()) {
-      setProjectImages(prev => [...prev, newImageUrl.trim()]);
-    }
+  const handleProjectTagsChange = (value: string) => {
+    const tags = value
+      .replace(/,/g, ';')
+      .split(';')
+      .map(tag => tag.trim())
+      .filter(tag => tag !== '');
+    setProjectFormData(prev => ({ ...prev, tags }));
   };
 
-  const removeImage = (index: number) => {
-    setProjectImages(prev => prev.filter((_, i) => i !== index));
-    if (index === 0 && projectImages.length > 1) {
-      setFormData(prev => ({ ...prev, image: projectImages[1] }));
-    }
+  const handlePostTagsChange = (value: string) => {
+    const tags = value
+      .replace(/,/g, ';')
+      .split(';')
+      .map(tag => tag.trim())
+      .filter(tag => tag !== '');
+    setPostFormData(prev => ({ ...prev, tags }));
   };
-
-  useEffect(() => {
-    if (projectImages.length > 0) {
-      setFormData(prev => ({ ...prev, image: projectImages[0] }));
-    }
-  }, [projectImages]);
 
   return (
     <div className="min-h-screen bg-vizualiza-bg-dark text-white p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8 pt-16">
           <h1 className="text-3xl font-bold">
@@ -215,189 +310,338 @@ const AdminPanel = ({ onClose, editingProject, onClearEditingProject }: AdminPan
           </Button>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Formulário */}
-          <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">
-                {editingProjectState ? 'Editar Projeto' : 'Novo Projeto'}
-              </h2>
-              {!isCreating && (
-                <Button 
-                  onClick={() => setIsCreating(true)}
-                  className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Novo
-                </Button>
+        {/* Tabs */}
+        <div className="flex space-x-4 mb-8">
+          <Button
+            onClick={() => setActiveTab('projects')}
+            variant={activeTab === 'projects' ? 'default' : 'outline'}
+            className={activeTab === 'projects' 
+              ? 'bg-vizualiza-purple hover:bg-vizualiza-purple-dark' 
+              : 'border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white'
+            }
+          >
+            <Briefcase className="w-4 h-4 mr-2" />
+            Projetos
+          </Button>
+          <Button
+            onClick={() => setActiveTab('posts')}
+            variant={activeTab === 'posts' ? 'default' : 'outline'}
+            className={activeTab === 'posts' 
+              ? 'bg-vizualiza-purple hover:bg-vizualiza-purple-dark' 
+              : 'border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white'
+            }
+          >
+            <BookOpen className="w-4 h-4 mr-2" />
+            Blog Posts
+          </Button>
+        </div>
+
+        {/* Projects Tab */}
+        {activeTab === 'projects' && (
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Project Form */}
+            <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">
+                  {editingProjectState ? 'Editar Projeto' : 'Novo Projeto'}
+                </h2>
+                {!isCreating && (
+                  <Button 
+                    onClick={() => setIsCreating(true)}
+                    className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Novo
+                  </Button>
+                )}
+              </div>
+
+              {isCreating && (
+                <form onSubmit={handleProjectSubmit} className="space-y-4">
+                  <Input
+                    placeholder="Título do projeto"
+                    value={projectFormData.title}
+                    onChange={(e) => setProjectFormData(prev => ({ ...prev, title: e.target.value }))}
+                    required
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  />
+
+                  <Textarea
+                    placeholder="Descrição do projeto"
+                    value={projectFormData.description}
+                    onChange={(e) => setProjectFormData(prev => ({ ...prev, description: e.target.value }))}
+                    required
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  />
+
+                  <Input
+                    placeholder="URL da imagem"
+                    value={projectFormData.image}
+                    onChange={(e) => setProjectFormData(prev => ({ ...prev, image: e.target.value }))}
+                    required
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  />
+
+                  <Select value={projectFormData.category} onValueChange={(value) => setProjectFormData(prev => ({ ...prev, category: value }))}>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projectCategories.map(category => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <Input
+                    type="date"
+                    value={projectFormData.date}
+                    onChange={(e) => setProjectFormData(prev => ({ ...prev, date: e.target.value }))}
+                    required
+                    className="bg-white/10 border-white/20 text-white"
+                  />
+
+                  <Input
+                    placeholder="Tags (separadas por vírgula ou ponto e vírgula)"
+                    value={projectFormData.tags.join('; ')}
+                    onChange={(e) => handleProjectTagsChange(e.target.value)}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  />
+
+                  <div className="flex space-x-4">
+                    <Button 
+                      type="submit"
+                      className="flex-1 bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {editingProjectState ? 'Atualizar' : 'Criar'}
+                    </Button>
+                    <Button 
+                      type="button"
+                      onClick={resetProjectForm}
+                      variant="outline"
+                      className="border-gray-600 text-gray-400 hover:bg-gray-600 hover:text-white"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </form>
               )}
             </div>
 
-            {isCreating && (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <Input
-                  placeholder="Título do projeto"
-                  value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                  required
-                  className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                />
-
-                <Textarea
-                  placeholder="Descrição do projeto"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  required
-                  className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                />
-
-                {/* Gerenciamento de Imagens */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-300">Imagens do Projeto</label>
-                    <Button
-                      type="button"
-                      onClick={addImageUrl}
-                      variant="outline"
-                      size="sm"
-                      className="border-vizualiza-orange text-vizualiza-orange hover:bg-vizualiza-orange hover:text-white"
-                    >
-                      <Image className="w-4 h-4 mr-1" />
-                      Adicionar
-                    </Button>
-                  </div>
-                  
-                  {projectImages.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2">
-                      {projectImages.map((img, index) => (
-                        <div key={index} className="relative group">
-                          <img 
-                            src={img} 
-                            alt={`Imagem ${index + 1}`}
-                            className="w-full h-20 object-cover rounded border"
-                          />
-                          <Button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            variant="destructive"
-                            size="sm"
-                            className="absolute top-1 right-1 w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="w-3 h-3" />
-                          </Button>
-                          {index === 0 && (
-                            <span className="absolute bottom-1 left-1 bg-vizualiza-purple text-xs px-1 rounded">
-                              Principal
-                            </span>
-                          )}
-                        </div>
-                      ))}
+            {/* Projects List */}
+            <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm">
+              <h2 className="text-xl font-semibold mb-6">Projetos Cadastrados</h2>
+              
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {projects.map(project => (
+                  <div key={project.id} className="bg-white/5 p-4 rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white mb-1">{project.title}</h3>
+                        <p className="text-sm text-gray-400 mb-2">{project.category}</p>
+                        <p className="text-xs text-gray-500">{new Date(project.date).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          onClick={() => handleEditProject(project)}
+                          size="sm"
+                          variant="outline"
+                          className="border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          onClick={() => handleDeleteProject(project.id)}
+                          size="sm"
+                          variant="outline"
+                          className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                  )}
-                  
-                  {projectImages.length === 0 && (
+                  </div>
+                ))}
+                
+                {projects.length === 0 && (
+                  <p className="text-gray-400 text-center py-8">
+                    Nenhum projeto cadastrado ainda.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Posts Tab */}
+        {activeTab === 'posts' && (
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Post Form */}
+            <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">
+                  {editingPostState ? 'Editar Post' : 'Novo Post'}
+                </h2>
+                {!isCreating && (
+                  <Button 
+                    onClick={() => setIsCreating(true)}
+                    className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Novo
+                  </Button>
+                )}
+              </div>
+
+              {isCreating && (
+                <form onSubmit={handlePostSubmit} className="space-y-4">
+                  <Input
+                    placeholder="Título do post"
+                    value={postFormData.title}
+                    onChange={(e) => setPostFormData(prev => ({ ...prev, title: e.target.value }))}
+                    required
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  />
+
+                  <Textarea
+                    placeholder="Resumo/Excerpt do post"
+                    value={postFormData.excerpt}
+                    onChange={(e) => setPostFormData(prev => ({ ...prev, excerpt: e.target.value }))}
+                    required
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  />
+
+                  <Textarea
+                    placeholder="Conteúdo completo do post"
+                    value={postFormData.content}
+                    onChange={(e) => setPostFormData(prev => ({ ...prev, content: e.target.value }))}
+                    required
+                    rows={6}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  />
+
+                  <Input
+                    placeholder="URL da imagem"
+                    value={postFormData.image}
+                    onChange={(e) => setPostFormData(prev => ({ ...prev, image: e.target.value }))}
+                    required
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  />
+
+                  <Select value={postFormData.category} onValueChange={(value) => setPostFormData(prev => ({ ...prev, category: value }))}>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {postCategories.map(category => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <div className="grid grid-cols-2 gap-4">
                     <Input
-                      placeholder="URL da imagem principal"
-                      value={formData.image}
-                      onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
+                      placeholder="Autor"
+                      value={postFormData.author}
+                      onChange={(e) => setPostFormData(prev => ({ ...prev, author: e.target.value }))}
                       required
                       className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
                     />
-                  )}
-                </div>
 
-                <Select value={formData.category} onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}>
-                  <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                    <SelectValue placeholder="Selecione uma categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(category => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Input
-                  type="date"
-                  value={formData.date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                  required
-                  className="bg-white/10 border-white/20 text-white"
-                />
-
-                <Input
-                  placeholder="Tags (separadas por vírgula ou ponto e vírgula)"
-                  value={formData.tags.join('; ')}
-                  onChange={(e) => handleTagsChange(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-                />
-
-                <div className="flex space-x-4">
-                  <Button 
-                    type="submit"
-                    className="flex-1 bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    {editingProjectState ? 'Atualizar' : 'Criar'}
-                  </Button>
-                  <Button 
-                    type="button"
-                    onClick={resetForm}
-                    variant="outline"
-                    className="border-gray-600 text-gray-400 hover:bg-gray-600 hover:text-white"
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              </form>
-            )}
-          </div>
-
-          {/* Lista de Projetos */}
-          <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm">
-            <h2 className="text-xl font-semibold mb-6">Projetos Cadastrados</h2>
-            
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              {projects.map(project => (
-                <div key={project.id} className="bg-white/5 p-4 rounded-lg">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-white mb-1">{project.title}</h3>
-                      <p className="text-sm text-gray-400 mb-2">{project.category}</p>
-                      <p className="text-xs text-gray-500">{new Date(project.date).toLocaleDateString('pt-BR')}</p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Button
-                        onClick={() => handleEdit(project)}
-                        size="sm"
-                        variant="outline"
-                        className="border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        onClick={() => handleDelete(project.id)}
-                        size="sm"
-                        variant="outline"
-                        className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <Input
+                      placeholder="Tempo de leitura (ex: 5 min)"
+                      value={postFormData.readTime}
+                      onChange={(e) => setPostFormData(prev => ({ ...prev, readTime: e.target.value }))}
+                      required
+                      className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                    />
                   </div>
-                </div>
-              ))}
-              
-              {projects.length === 0 && (
-                <p className="text-gray-400 text-center py-8">
-                  Nenhum projeto cadastrado ainda.
-                </p>
+
+                  <Input
+                    type="date"
+                    value={postFormData.date}
+                    onChange={(e) => setPostFormData(prev => ({ ...prev, date: e.target.value }))}
+                    required
+                    className="bg-white/10 border-white/20 text-white"
+                  />
+
+                  <Input
+                    placeholder="Tags (separadas por vírgula ou ponto e vírgula)"
+                    value={postFormData.tags.join('; ')}
+                    onChange={(e) => handlePostTagsChange(e.target.value)}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+                  />
+
+                  <div className="flex space-x-4">
+                    <Button 
+                      type="submit"
+                      className="flex-1 bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {editingPostState ? 'Atualizar' : 'Criar'}
+                    </Button>
+                    <Button 
+                      type="button"
+                      onClick={resetPostForm}
+                      variant="outline"
+                      className="border-gray-600 text-gray-400 hover:bg-gray-600 hover:text-white"
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                </form>
               )}
             </div>
+
+            {/* Posts List */}
+            <div className="bg-white/5 p-6 rounded-lg backdrop-blur-sm">
+              <h2 className="text-xl font-semibold mb-6">Posts Cadastrados</h2>
+              
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {posts.map(post => (
+                  <div key={post.id} className="bg-white/5 p-4 rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white mb-1">{post.title}</h3>
+                        <p className="text-sm text-gray-400 mb-2">{post.category}</p>
+                        <p className="text-xs text-gray-500">{new Date(post.date).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          onClick={() => handleEditPost(post)}
+                          size="sm"
+                          variant="outline"
+                          className="border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          onClick={() => handleDeletePost(post.id)}
+                          size="sm"
+                          variant="outline"
+                          className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {posts.length === 0 && (
+                  <p className="text-gray-400 text-center py-8">
+                    Nenhum post cadastrado ainda.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

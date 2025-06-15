@@ -7,9 +7,14 @@ import Contact from '@/components/Contact';
 import AdminPanel from '@/components/AdminPanel';
 import AdminLogin from '@/components/AdminLogin';
 import CustomCursor from '@/components/CustomCursor';
+import ChatBot from '@/components/ChatBot';
+import VoiceCommands from '@/components/VoiceCommands';
+import Analytics from '@/components/Analytics';
+import NewsletterSignup from '@/components/NewsletterSignup';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
+import { useGestures } from '@/hooks/useGestures';
 
 interface Project {
   id: string;
@@ -32,6 +37,50 @@ const Index = () => {
     const isLogged = localStorage.getItem('vizualiza-admin-logged') === 'true';
     setIsAdminLoggedIn(isLogged);
   }, []);
+
+  // Gestos para navegação
+  useGestures({
+    onSwipeUp: () => {
+      // Scroll para cima
+      window.scrollBy({ top: -window.innerHeight, behavior: 'smooth' });
+    },
+    onSwipeDown: () => {
+      // Scroll para baixo
+      window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+    },
+    onSwipeLeft: () => {
+      // Ir para próxima seção
+      const sections = ['hero', 'about', 'portfolio', 'contact'];
+      const currentSection = getCurrentSection();
+      const currentIndex = sections.indexOf(currentSection);
+      const nextIndex = (currentIndex + 1) % sections.length;
+      document.getElementById(sections[nextIndex])?.scrollIntoView({ behavior: 'smooth' });
+    },
+    onSwipeRight: () => {
+      // Ir para seção anterior
+      const sections = ['hero', 'about', 'portfolio', 'contact'];
+      const currentSection = getCurrentSection();
+      const currentIndex = sections.indexOf(currentSection);
+      const prevIndex = (currentIndex - 1 + sections.length) % sections.length;
+      document.getElementById(sections[prevIndex])?.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+
+  const getCurrentSection = () => {
+    const sections = ['hero', 'about', 'portfolio', 'contact'];
+    const scrollPosition = window.scrollY + window.innerHeight / 2;
+    
+    for (const section of sections) {
+      const element = document.getElementById(section);
+      if (element) {
+        const { offsetTop, offsetHeight } = element;
+        if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+          return section;
+        }
+      }
+    }
+    return 'hero';
+  };
 
   const handleAdminClick = () => {
     if (isAdminLoggedIn) {
@@ -75,6 +124,9 @@ const Index = () => {
       </Helmet>
       
       <CustomCursor />
+      <VoiceCommands />
+      <ChatBot />
+      
       <Navbar 
         onAdminClick={handleAdminClick} 
         isAdminLoggedIn={isAdminLoggedIn}
@@ -107,6 +159,12 @@ const Index = () => {
             isAdmin={isAdminLoggedIn}
             onEditProject={handleEditProject}
           />
+          <Analytics />
+          <div className="py-20 px-4 bg-vizualiza-bg-dark">
+            <div className="max-w-4xl mx-auto">
+              <NewsletterSignup />
+            </div>
+          </div>
           <Contact />
         </motion.div>
       )}

@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -30,7 +29,6 @@ interface CreateBlogPostData {
   read_time: string;
   tags: string[];
   featured_image?: string;
-  image: string; // Add the image property
   date: string;
 }
 

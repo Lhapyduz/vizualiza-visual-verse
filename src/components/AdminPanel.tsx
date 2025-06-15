@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { X, Plus, Edit, Trash2, Save, Loader2, Briefcase, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -138,7 +139,17 @@ const AdminPanel = ({
     console.log('Submitting project data:', projectData);
 
     if (editingProjectState) {
-      updateProject({ id: editingProjectState.id, ...projectData });
+      // Convert string[] to ProjectImage[] format for update
+      const updateData = {
+        ...projectData,
+        images: projectImages.map((url, index) => ({
+          id: '', // Will be handled by the backend
+          project_id: editingProjectState.id,
+          image_url: url,
+          sort_order: index
+        }))
+      };
+      updateProject({ id: editingProjectState.id, ...updateData });
     } else {
       createProject(projectData);
     }

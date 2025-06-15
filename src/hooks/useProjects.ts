@@ -33,7 +33,6 @@ interface CreateProjectData {
   date: string;
   tags: string[];
   featured_image?: string;
-  image: string; // Add the image property
   images?: string[];
 }
 
@@ -89,6 +88,8 @@ export const useProjects = () => {
       try {
         const { images, ...projectInfo } = projectData;
         
+        console.log('Creating project with data:', projectInfo);
+        
         // Try Supabase first
         const response = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/projects`, {
           method: 'POST',
@@ -103,6 +104,7 @@ export const useProjects = () => {
 
         if (response.ok) {
           const [project] = await response.json();
+          console.log('Project created successfully:', project);
           
           // Insert images if any
           if (images && images.length > 0) {
@@ -112,7 +114,7 @@ export const useProjects = () => {
               sort_order: index
             }));
 
-            await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/project_images`, {
+            const imageResponse = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/project_images`, {
               method: 'POST',
               headers: {
                 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdWdrcGRnbXlqZmlmd3hkcXdqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNDk4OTAsImV4cCI6MjA2MzgyNTg5MH0.rMMOZIP1Za4Q1Tcs-Z86saiK4tiPu9Yx6ktTIbK5eh0',
@@ -121,11 +123,17 @@ export const useProjects = () => {
               },
               body: JSON.stringify(imageData)
             });
+            
+            if (imageResponse.ok) {
+              console.log('Images added successfully');
+            }
           }
 
           return project;
         } else {
-          throw new Error('Supabase insert failed');
+          const errorText = await response.text();
+          console.error('Supabase error response:', errorText);
+          throw new Error(`Supabase insert failed: ${errorText}`);
         }
       } catch (error) {
         console.log('Supabase error, saving to localStorage:', error);
@@ -164,7 +172,9 @@ export const useProjects = () => {
   const updateProjectMutation = useMutation({
     mutationFn: async ({ id, ...projectData }: Partial<Project> & { id: string }) => {
       try {
-        const { images, ...projectInfo } = projectData;
+        const { images, image, ...projectInfo } = projectData;
+        
+        console.log('Updating project with data:', projectInfo);
         
         // Try Supabase first
         const response = await fetch(`https://bmugkpdgmyjfifwxdqwj.supabase.co/rest/v1/projects?id=eq.${id}`, {
@@ -209,7 +219,9 @@ export const useProjects = () => {
             }
           }
         } else {
-          throw new Error('Supabase update failed');
+          const errorText = await response.text();
+          console.error('Supabase update error:', errorText);
+          throw new Error(`Supabase update failed: ${errorText}`);
         }
       } catch (error) {
         console.log('Supabase error, updating localStorage:', error);

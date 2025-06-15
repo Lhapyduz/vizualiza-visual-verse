@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Menu, X, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,9 +14,13 @@ const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps
   const navItems = [
     { name: 'Início', href: '#hero' },
     { name: 'Sobre', href: '#about' },
-    { name: 'Portfólio', href: '#portfolio' },
+    { name: 'Serviços', href: '#services' },
+    { name: 'Portfolio', href: '#portfolio' },
+    { name: 'Depoimentos', href: '#testimonials' },
+    { name: 'Orçamento', href: '#calculator' },
+    { name: 'FAQ', href: '#faq' },
     { name: 'Blog', href: '#blog' },
-    { name: 'Contato', href: '#contact' },
+    { name: 'Contato', href: '#contact' }
   ];
 
   const scrollToSection = (href: string) => {

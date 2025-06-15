@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, FolderOpen, FileText, Tag, BarChart3, Share2 } from 'lucide-react';
+import { X, FolderOpen, FileText, Tag, BarChart3, Share2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ProjectList from './admin/ProjectList';
 import ProjectForm, { ProjectFormData } from './admin/ProjectForm';
@@ -26,6 +27,8 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
     if (editingPost) return 'blog';
     return 'projects';
   });
+  const [showProjectForm, setShowProjectForm] = useState(false);
+  const [showBlogForm, setShowBlogForm] = useState(false);
 
   // Get projects and blog posts data
   const { projects, deleteProject, isDeleting: isDeletingProject, createProject, updateProject, isCreating: isCreatingProject, isUpdating: isUpdatingProject } = useProjects();
@@ -42,8 +45,10 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
   useEffect(() => {
     if (editingProject) {
       setActiveTab('projects');
+      setShowProjectForm(true);
     } else if (editingPost) {
       setActiveTab('blog');
+      setShowBlogForm(true);
     }
   }, [editingProject, editingPost]);
 
@@ -59,12 +64,19 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
 
   const handleProjectSubmit = async (data: ProjectFormData) => {
     try {
+      // Convert string array to ProjectImage array for images
+      const projectData = {
+        ...data,
+        images: data.images?.map(url => ({ url, alt: data.title })) || []
+      };
+      
       if (editingProject) {
-        await updateProject({ id: editingProject.id, ...data });
+        await updateProject({ id: editingProject.id, ...projectData });
       } else {
-        await createProject(data);
+        await createProject(projectData);
       }
       onClearEditingProject();
+      setShowProjectForm(false);
     } catch (error) {
       console.error('Error submitting project:', error);
     }
@@ -73,8 +85,15 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
   const handleBlogSubmit = async (data: BlogFormData) => {
     try {
       const blogData = {
-        ...data,
-        image: data.images[0] || ''
+        title: data.title,
+        excerpt: data.excerpt,
+        content: data.content,
+        category: data.category,
+        author: data.author,
+        read_time: data.readTime || '5 min',
+        tags: data.tags,
+        featured_image: data.images?.[0] || '',
+        date: data.date
       };
       
       if (editingPost) {
@@ -83,44 +102,89 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
         await createPost(blogData);
       }
       onClearEditingPost();
+      setShowBlogForm(false);
     } catch (error) {
       console.error('Error submitting blog post:', error);
     }
   };
 
+  const handleAddProject = () => {
+    setShowProjectForm(true);
+    setActiveTab('projects');
+  };
+
+  const handleAddBlog = () => {
+    setShowBlogForm(true);
+    setActiveTab('blog');
+  };
+
+  const handleCancelProject = () => {
+    setShowProjectForm(false);
+    onClearEditingProject();
+  };
+
+  const handleCancelBlog = () => {
+    setShowBlogForm(false);
+    onClearEditingPost();
+  };
+
   const renderContent = () => {
     switch (activeTab) {
       case 'projects':
-        return editingProject ? (
+        return (showProjectForm || editingProject) ? (
           <ProjectForm
             editingProject={editingProject}
             onSubmit={handleProjectSubmit}
-            onCancel={onClearEditingProject}
+            onCancel={handleCancelProject}
             isLoading={isCreatingProject || isUpdatingProject}
           />
         ) : (
-          <ProjectList
-            projects={projects}
-            onEdit={handleEditProject}
-            onDelete={deleteProject}
-            isDeleting={isDeletingProject}
-          />
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-white">Projetos</h2>
+              <Button
+                onClick={handleAddProject}
+                className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Projeto
+              </Button>
+            </div>
+            <ProjectList
+              projects={projects}
+              onEdit={handleEditProject}
+              onDelete={deleteProject}
+              isDeleting={isDeletingProject}
+            />
+          </div>
         );
       case 'blog':
-        return editingPost ? (
+        return (showBlogForm || editingPost) ? (
           <BlogForm
             editingPost={editingPost}
             onSubmit={handleBlogSubmit}
-            onCancel={onClearEditingPost}
+            onCancel={handleCancelBlog}
             isLoading={isCreatingPost || isUpdatingPost}
           />
         ) : (
-          <BlogList
-            posts={posts}
-            onEdit={handleEditPost}
-            onDelete={deletePost}
-            isDeleting={isDeletingPost}
-          />
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-white">Blog Posts</h2>
+              <Button
+                onClick={handleAddBlog}
+                className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Post
+              </Button>
+            </div>
+            <BlogList
+              posts={posts}
+              onEdit={handleEditPost}
+              onDelete={deletePost}
+              isDeleting={isDeletingPost}
+            />
+          </div>
         );
       case 'categories':
         return <CategoryManager type="project" />;
@@ -130,12 +194,24 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
         return <Analytics />;
       default:
         return (
-          <ProjectList
-            projects={projects}
-            onEdit={handleEditProject}
-            onDelete={deleteProject}
-            isDeleting={isDeletingProject}
-          />
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-white">Projetos</h2>
+              <Button
+                onClick={handleAddProject}
+                className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar Projeto
+              </Button>
+            </div>
+            <ProjectList
+              projects={projects}
+              onEdit={handleEditProject}
+              onDelete={deleteProject}
+              isDeleting={isDeletingProject}
+            />
+          </div>
         );
     }
   };

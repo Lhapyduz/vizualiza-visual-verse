@@ -32,7 +32,12 @@ export const useSocialMedia = () => {
     const saved = localStorage.getItem('vizualiza-social-medias');
     if (saved) {
       try {
-        setSocialMedias(JSON.parse(saved));
+        const parsedSocialMedias = JSON.parse(saved);
+        // Filtrar LinkedIn se existir
+        const filteredSocialMedias = parsedSocialMedias.filter(
+          (media: SocialMedia) => media.platform.toLowerCase() !== 'linkedin'
+        );
+        setSocialMedias(filteredSocialMedias);
       } catch (error) {
         console.error('Error loading social medias:', error);
         setSocialMedias(DEFAULT_SOCIAL_MEDIA);
@@ -44,11 +49,21 @@ export const useSocialMedia = () => {
   }, []);
 
   const saveSocialMedias = (medias: SocialMedia[]) => {
-    setSocialMedias(medias);
-    localStorage.setItem('vizualiza-social-medias', JSON.stringify(medias));
+    // Garantir que LinkedIn não seja salvo
+    const filteredMedias = medias.filter(
+      media => media.platform.toLowerCase() !== 'linkedin'
+    );
+    setSocialMedias(filteredMedias);
+    localStorage.setItem('vizualiza-social-medias', JSON.stringify(filteredMedias));
   };
 
   const addSocialMedia = (media: Omit<SocialMedia, 'id'>) => {
+    // Bloquear adição de LinkedIn
+    if (media.platform.toLowerCase() === 'linkedin') {
+      console.warn('LinkedIn não é mais suportado');
+      return;
+    }
+    
     const newMedia = {
       ...media,
       id: Date.now().toString()
@@ -58,6 +73,12 @@ export const useSocialMedia = () => {
   };
 
   const updateSocialMedia = (id: string, updates: Partial<SocialMedia>) => {
+    // Bloquear atualização para LinkedIn
+    if (updates.platform?.toLowerCase() === 'linkedin') {
+      console.warn('LinkedIn não é mais suportado');
+      return;
+    }
+    
     const updated = socialMedias.map(media =>
       media.id === id ? { ...media, ...updates } : media
     );

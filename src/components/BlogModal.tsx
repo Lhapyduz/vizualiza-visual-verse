@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import SocialShare from './SocialShare';
 import BlogComments from './BlogComments';
-import RelatedPosts from './RelatedPosts';
 import SEOHead from './SEOHead';
 
 interface BlogPost {
@@ -43,12 +42,6 @@ const BlogModal: React.FC<BlogModalProps> = ({
       onEdit(post);
       onClose();
     }
-  };
-
-  const handleRelatedPostClick = (relatedPost: any) => {
-    // Em uma implementação real, isso abriria o post relacionado
-    console.log('Navigate to related post:', relatedPost.id);
-    onClose();
   };
 
   return (
@@ -177,14 +170,6 @@ const BlogModal: React.FC<BlogModalProps> = ({
                     description={post.excerpt}
                   />
                 </div>
-
-                {/* Related Posts */}
-                <RelatedPosts
-                  currentPostId={post.id}
-                  currentCategory={post.category}
-                  currentTags={post.tags}
-                  onPostClick={handleRelatedPostClick}
-                />
 
                 {/* Comments */}
                 <BlogComments

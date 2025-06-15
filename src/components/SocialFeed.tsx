@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { Instagram, Linkedin, Heart, MessageCircle, Share2, ExternalLink, Calendar, Music, Palette } from 'lucide-react';
+import { Instagram, Heart, MessageCircle, Share2, ExternalLink, Calendar, Music, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ScrollAnimation from './ScrollAnimation';
@@ -9,7 +9,7 @@ import { useSocialMedia } from '@/hooks/useSocialMedia';
 
 interface SocialPost {
   id: string;
-  platform: 'instagram' | 'linkedin' | 'facebook' | 'twitter' | 'youtube' | 'tiktok' | 'behance' | 'dribbble';
+  platform: 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'tiktok' | 'behance' | 'dribbble';
   content: string;
   image?: string;
   likes: number;
@@ -48,22 +48,6 @@ const SocialFeed = () => {
         avatar: 'https://images.unsplash.com/photo-1586953209889-5ce391d8cd9b?w=100&h=100&fit=crop',
         handle: '@vizualizaoficial'
       }
-    },
-    {
-      id: '2',
-      platform: 'linkedin',
-      content: 'Como a psicologia das cores pode transformar a percepção da sua marca? Compartilho alguns insights sobre a importância estratégica das cores no branding.',
-      image: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=500&h=300&fit=crop',
-      likes: 89,
-      comments: 12,
-      shares: 34,
-      date: '2024-01-14T16:45:00Z',
-      url: 'https://linkedin.com/company/vizualiza',
-      author: {
-        name: 'Gregory Vizualiza',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
-        handle: 'gregory-vizualiza'
-      }
     }
   ];
 
@@ -85,8 +69,6 @@ const SocialFeed = () => {
     switch (platform) {
       case 'instagram':
         return <Instagram className="w-5 h-5" />;
-      case 'linkedin':
-        return <Linkedin className="w-5 h-5" />;
       case 'tiktok':
         return <Music className="w-5 h-5" />;
       case 'behance':
@@ -105,8 +87,6 @@ const SocialFeed = () => {
     switch (platform) {
       case 'instagram':
         return 'from-purple-600 to-pink-600';
-      case 'linkedin':
-        return 'from-blue-600 to-blue-800';
       case 'tiktok':
         return 'from-black to-gray-800';
       case 'behance':

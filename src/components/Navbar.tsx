@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Menu, X, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -7,10 +7,13 @@ interface NavbarProps {
   onAdminClick: () => void;
   isAdminLoggedIn?: boolean;
   onLogout?: () => void;
+  currentSection?: string;
 }
 
-const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps) => {
+const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout, currentSection }: NavbarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const menuContentRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
     { name: 'Início', href: '#hero' },
@@ -20,12 +23,68 @@ const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps
     { name: 'Contato', href: '#contact' },
   ];
 
-  const scrollToSection = (href: string) => {
+  const scrollToSection = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    event.preventDefault();
     const element = document.querySelector(href);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
     setIsMenuOpen(false);
+  };
+
+  useEffect(() => {
+    if (isMenuOpen && menuContentRef.current) {
+      const focusableElements = menuContentRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusableElements.length > 0) {
+        focusableElements[0].focus();
+      }
+
+      const handleKeyDown = (event: KeyboardEvent) => {
+        if (event.key === 'Tab' && menuContentRef.current) {
+          const focusableElements = menuContentRef.current.querySelectorAll<HTMLElement>(
+            'a[href], button, input, textarea, select, details, [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusableElements.length === 0) return;
+
+          const firstElement = focusableElements[0];
+          const lastElement = focusableElements[focusableElements.length - 1];
+
+          if (event.shiftKey) {
+            if (document.activeElement === firstElement) {
+              lastElement.focus();
+              event.preventDefault();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              firstElement.focus();
+              event.preventDefault();
+            }
+          }
+        }
+      };
+
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        menuButtonRef.current?.focus();
+      };
+    }
+  }, [isMenuOpen]);
+
+  const getLinkClassName = (href: string) => {
+    const isActive = href === `#${currentSection}`;
+    return `text-white hover:text-vizualiza-purple px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:scale-105 ${
+      isActive ? 'text-vizualiza-purple font-bold' : ''
+    }`;
+  };
+
+  const getMobileLinkClassName = (href: string) => {
+    const isActive = href === `#${currentSection}`;
+    return `text-white hover:text-vizualiza-purple block px-3 py-2 rounded-md text-base font-medium w-full text-left transition-colors duration-200 ${
+      isActive ? 'text-vizualiza-purple font-bold' : ''
+    }`;
   };
 
   return (
@@ -42,13 +101,14 @@ const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
               {navItems.map((item) => (
-                <button
+                <a
                   key={item.name}
-                  onClick={() => scrollToSection(item.href)}
-                  className="text-white hover:text-vizualiza-purple px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 hover:scale-105"
+                  href={item.href}
+                  onClick={(e) => scrollToSection(e, item.href)}
+                  className={getLinkClassName(item.href)}
                 >
                   {item.name}
-                </button>
+                </a>
               ))}
               <div className="flex items-center space-x-2 ml-4">
                 <Button
@@ -77,10 +137,13 @@ const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps
           {/* Mobile menu button */}
           <div className="md:hidden">
             <Button
+              ref={menuButtonRef}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               variant="ghost"
               size="sm"
               className="text-white"
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-menu-content"
             >
               {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </Button>
@@ -90,16 +153,17 @@ const Navbar = ({ onAdminClick, isAdminLoggedIn = false, onLogout }: NavbarProps
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden">
+        <div className="md:hidden" id="mobile-menu-content" ref={menuContentRef}>
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-vizualiza-bg-dark/95 backdrop-blur-md">
             {navItems.map((item) => (
-              <button
+              <a
                 key={item.name}
-                onClick={() => scrollToSection(item.href)}
-                className="text-white hover:text-vizualiza-purple block px-3 py-2 rounded-md text-base font-medium w-full text-left transition-colors duration-200"
+                href={item.href}
+                onClick={(e) => scrollToSection(e, item.href)}
+                className={getMobileLinkClassName(item.href)}
               >
                 {item.name}
-              </button>
+              </a>
             ))}
             <div className="flex flex-col space-y-2 px-3 pt-2">
               <Button

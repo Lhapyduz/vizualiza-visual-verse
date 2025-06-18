@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Calendar, ChevronLeft, ChevronRight, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ImageZoom from './ImageZoom';
@@ -56,13 +57,29 @@ const ProjectModal = ({
     }
   };
 
-  if (!isOpen) return null;
+  // if (!isOpen) return null; // Can be removed if AnimatePresence handles it
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-vizualiza-bg-dark border border-white/10 rounded-3xl max-w-6xl w-full max-h-[95vh] overflow-hidden animate-scale-in" onClick={e => e.stopPropagation()}>
-        {/* Header */}
-        <div className="flex items-start justify-between p-8 pb-6">
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={onClose}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.div
+            className="bg-vizualiza-bg-dark border border-white/10 rounded-3xl max-w-6xl w-full max-h-[95vh] overflow-hidden"
+            onClick={e => e.stopPropagation()}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30, duration: 0.4 }}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between p-8 pb-6">
           <div className="flex-1">
             <h1 className="text-4xl font-bold text-white mb-4">{project.title}</h1>
             <div className="flex items-center gap-6">
@@ -169,10 +186,12 @@ const ProjectModal = ({
                 </p>
               </div>
             )}
-          </div>
-        </div>
-      </div>
-    </div>
+            </div>
+            {/* ... rest of the modal content ... */}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 

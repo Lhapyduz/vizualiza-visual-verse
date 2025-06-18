@@ -25,11 +25,19 @@ const Index = () => {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [currentSection, setCurrentSection] = useState('hero');
 
   useEffect(() => {
     // Verificar se admin está logado
     const isLogged = localStorage.getItem('vizualiza-admin-logged') === 'true';
     setIsAdminLoggedIn(isLogged);
+
+    const handleScroll = () => {
+      setCurrentSection(getCurrentSection());
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   // Gestos para navegação
@@ -110,6 +118,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-vizualiza-bg-dark text-white overflow-x-hidden relative">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-vizualiza-purple focus:text-white focus:rounded-md focus:shadow-lg"
+      >
+        Pular para o conteúdo principal
+      </a>
       <SEOHead
         title="Vizualiza Visual Verse | Design e Identidade Visual"
         description="Estúdio de design especializado em identidade visual, web design e branding. Transformamos sua marca com soluções criativas e impactantes."
@@ -125,6 +139,7 @@ const Index = () => {
         onAdminClick={handleAdminClick} 
         isAdminLoggedIn={isAdminLoggedIn}
         onLogout={handleLogout}
+        currentSection={currentSection}
       />
       
       {showLogin && (
@@ -144,6 +159,7 @@ const Index = () => {
         />
       ) : (
         <motion.div
+          id="main-content"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

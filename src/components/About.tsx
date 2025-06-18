@@ -1,10 +1,9 @@
 
+import { motion } from 'framer-motion';
 import { Eye, Target, Lightbulb, Users } from 'lucide-react';
-import { useIntersectionObserver } from '@/hooks/useIntersectionObserver';
 import { useState } from 'react';
 
 const About = () => {
-  const { ref, isIntersecting } = useIntersectionObserver();
   const [hoveredCard, setHoveredCard] = useState<number | null>(null);
 
   const values = [
@@ -38,8 +37,24 @@ const About = () => {
     }
   ];
 
+  const fadeInUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+  };
+
+  const fadeIn = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } }
+  };
+
   return (
-    <section ref={ref} id="about" className="py-20 px-4 bg-vizualiza-bg-light relative overflow-hidden">
+    <motion.section
+      id="about"
+      className="py-20 px-4 bg-vizualiza-bg-light relative overflow-hidden"
+      initial="initial"
+      whileInView="animate"
+      viewport={{ once: true }}
+    >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -48,8 +63,16 @@ const About = () => {
         }} />
       </div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
-        <div className={`text-center mb-16 transition-all duration-1000 ${isIntersecting ? 'animate-fade-in' : 'opacity-0 translate-y-10'}`}>
+      <motion.div
+        className="max-w-6xl mx-auto relative z-10"
+        initial="initial"
+        whileInView="animate"
+        viewport={{ once: true }}
+      >
+        <motion.div
+          className="text-center mb-16"
+          variants={fadeInUp}
+        >
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             <span className="text-white">Sobre a </span>
             <span className="bg-vizualiza-gradient bg-clip-text text-transparent relative">
@@ -57,20 +80,21 @@ const About = () => {
               <div className="absolute -bottom-2 left-0 w-full h-1 bg-vizualiza-gradient rounded-full animate-pulse" />
             </span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <motion.p
+            className="text-xl text-gray-300 max-w-3xl mx-auto"
+            variants={{ ...fadeInUp, animate: { ...fadeInUp.animate, transition: { ...fadeInUp.animate.transition, delay: 0.2 }}}}
+          >
             Somos especialistas em comunicação visual, dedicados a criar soluções criativas 
             que elevam marcas e geram conexões autênticas com o público.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           {values.map((value, index) => (
-            <div 
+            <motion.div
               key={value.title}
-              className={`relative group cursor-pointer transition-all duration-500 ${
-                isIntersecting ? 'animate-fade-in' : 'opacity-0 translate-y-10'
-              }`}
-              style={{ animationDelay: `${0.4 + index * 0.1}s` }}
+              className="relative group cursor-pointer"
+              variants={{ ...fadeInUp, animate: { ...fadeInUp.animate, transition: { ...fadeInUp.animate.transition, delay: 0.4 + index * 0.1 }}}}
               onMouseEnter={() => setHoveredCard(index)}
               onMouseLeave={() => setHoveredCard(null)}
             >
@@ -104,7 +128,10 @@ const About = () => {
           ))}
         </div>
 
-        <div className={`bg-gradient-to-r from-vizualiza-purple/20 to-vizualiza-orange/20 p-8 rounded-xl backdrop-blur-sm border border-white/10 relative overflow-hidden transition-all duration-1000 ${isIntersecting ? 'animate-fade-in' : 'opacity-0 translate-y-10'}`} style={{ animationDelay: '0.8s' }}>
+        <motion.div
+          className="bg-gradient-to-r from-vizualiza-purple/20 to-vizualiza-orange/20 p-8 rounded-xl backdrop-blur-sm border border-white/10 relative overflow-hidden"
+          variants={{ ...fadeIn, animate: { ...fadeIn.animate, transition: { ...fadeIn.animate.transition, delay: 0.8 }}}}
+        >
           {/* Enhanced Background Effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-vizualiza-purple/10 to-vizualiza-orange/10 animate-gradient bg-300%" />
           
@@ -119,9 +146,9 @@ const About = () => {
               experiências que inspiram, engajam e geram resultados tangíveis.
             </p>
           </div>
-        </div>
-      </div>
-    </section>
+        </motion.div>
+      </motion.div>
+    </motion.section>
   );
 };
 

@@ -156,7 +156,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                 </Button>
               )}
             </div>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
               Descubra insights, tendências e dicas do mundo do design através 
               dos nossos artigos especializados.
             </p>
@@ -183,7 +183,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                 className={`px-6 py-2 transition-all duration-300 hover:scale-105 ${
                   selectedCategory === category
                     ? 'bg-vizualiza-purple hover:bg-vizualiza-purple-dark text-white'
-                    : 'border-vizualiza-purple text-vizualiza-purple hover:bg-vizualiza-purple hover:text-white'
+                    : 'border-vizualiza-purple text-gray-700 hover:bg-vizualiza-purple hover:text-white'
                 }`}
               >
                 {category}
@@ -217,7 +217,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                 </div>
                 
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-3 text-sm text-gray-400">
+                  <div className="flex items-center justify-between mb-3 text-sm text-gray-600">
                     <div className="flex items-center">
                       <User className="w-4 h-4 mr-1" />
                       {post.author}
@@ -228,16 +228,16 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                     </div>
                   </div>
 
-                  <div className="flex items-center text-gray-400 text-sm mb-3">
+                  <div className="flex items-center text-gray-600 text-sm mb-3">
                     <Calendar className="w-4 h-4 mr-1" />
                     {new Date(post.date).toLocaleDateString('pt-BR')}
                   </div>
                   
-                  <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-vizualiza-purple transition-colors duration-300">
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-vizualiza-purple transition-colors duration-300">
                     {post.title}
                   </h3>
                   
-                  <p className="text-gray-400 mb-4 leading-relaxed">
+                  <p className="text-gray-700 mb-4 leading-relaxed">
                     {post.excerpt}
                   </p>
                   

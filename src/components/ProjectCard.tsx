@@ -13,12 +13,40 @@ interface ProjectCardProps {
 }
 
 const ProjectCard = ({ project, index, onClick }: ProjectCardProps) => {
+  const cardVariants = {
+    rest: {
+      // No specific initial state here, relying on existing styles or initial prop of motion.div
+    },
+    hover: {
+      y: -8, // Keep existing hover effect
+      transition: { staggerChildren: 0.05, duration: 0.3 }
+    }
+  };
+
+  const titleVariants = {
+    rest: { opacity: 1, y: 0 },
+    hover: { y: -5, transition: { type: "spring", stiffness: 300, damping: 10 } }
+  };
+
+  const descriptionVariants = {
+    rest: { opacity: 1, y: 0 },
+    hover: { y: -3, transition: { type: "spring", stiffness: 300, damping: 10, delay: 0.05 } }
+  };
+
+  const tagsVariants = {
+    rest: { opacity: 1, y: 0 },
+    hover: { y: -3, transition: { type: "spring", stiffness: 300, damping: 10, delay: 0.1 } }
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      whileHover={{ y: -8 }}
+      variants={cardVariants}
+      initial="rest"
+      whileHover="hover"
+      animate={{ opacity: 1, y: 0 }} // initial animation for card itself
+      initial={{ opacity: 0, y: 50 }} // initial state for card itself
+      transition={{ duration: 0.6, delay: index * 0.1, y: { type: "spring", stiffness: 100 }, scale: { type: "spring", stiffness: 400, damping: 17 } }}
+      whileTap={{ scale: 0.98 }}
       className="group relative bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 hover:border-vizualiza-purple/50 transition-all duration-500 cursor-pointer"
       onClick={onClick}
     >
@@ -58,31 +86,41 @@ const ProjectCard = ({ project, index, onClick }: ProjectCardProps) => {
           </div>
         </div>
         
-        <h3 className="text-xl font-bold text-white mb-3 group-hover:text-vizualiza-purple transition-colors duration-300 line-clamp-2">
+        <motion.h3
+          variants={titleVariants}
+          className="text-xl font-bold text-white mb-3 group-hover:text-vizualiza-purple transition-colors duration-300 line-clamp-2"
+        >
           {project.title}
-        </h3>
+        </motion.h3>
         
-        <p className="text-gray-300 text-sm leading-relaxed mb-4 line-clamp-3">
+        <motion.p
+          variants={descriptionVariants}
+          className="text-gray-300 text-sm leading-relaxed mb-4 line-clamp-3"
+        >
           {project.description}
-        </p>
+        </motion.p>
         
         {/* Tags */}
         {project.tags && project.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <motion.div variants={tagsVariants} className="flex flex-wrap gap-2">
             {project.tags.slice(0, 3).map((tag, tagIndex) => (
-              <span 
+              <motion.span
                 key={tagIndex}
+                // Optionally add individual item variants for tags if needed
                 className="px-2 py-1 bg-vizualiza-orange/20 text-vizualiza-orange text-xs rounded-md border border-vizualiza-orange/30"
               >
                 {tag}
-              </span>
+              </motion.span>
             ))}
             {project.tags.length > 3 && (
-              <span className="px-2 py-1 bg-gray-700/50 text-gray-400 text-xs rounded-md">
+              <motion.span
+                className="px-2 py-1 bg-gray-700/50 text-gray-400 text-xs rounded-md"
+                // Optionally add individual item variants for tags if needed
+              >
                 +{project.tags.length - 3}
-              </span>
+              </motion.span>
             )}
-          </div>
+          </motion.div>
         )}
       </div>
       

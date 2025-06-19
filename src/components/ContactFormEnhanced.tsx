@@ -30,10 +30,47 @@ const ContactFormEnhanced = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { toast } = useToast();
+  const [errors, setErrors] = useState<{ name?: string; email?: string; message?: string }>({});
+  const [touched, setTouched] = useState<{ name?: boolean; email?: boolean; message?: boolean }>({});
+
+  const validateField = (name: string, value: string) => {
+    let errorMsg: string | undefined = undefined;
+    switch (name) {
+      case 'name':
+        if (!value) errorMsg = "Nome é obrigatório";
+        break;
+      case 'email':
+        if (!value) {
+          errorMsg = "Email é obrigatório";
+        } else if (!/\S+@\S+\.\S+/.test(value)) {
+          errorMsg = "Formato de email inválido";
+        }
+        break;
+      case 'message':
+        if (!value) errorMsg = "Mensagem é obrigatória";
+        break;
+      default:
+        break;
+    }
+    setErrors(prev => ({ ...prev, [name]: errorMsg }));
+    return errorMsg === undefined;
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error for the field on input change
+    if (touched[name as keyof typeof touched]) { // Only validate if already touched
+      validateField(name, value);
+    } else {
+       setErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    validateField(name, value);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,6 +116,25 @@ const ContactFormEnhanced = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Mark all fields as touched to show errors if form is submitted empty
+    const newTouched = { name: true, email: true, message: true };
+    setTouched(newTouched);
+
+    // Validate all required fields
+    const nameIsValid = validateField('name', formData.name);
+    const emailIsValid = validateField('email', formData.email);
+    const messageIsValid = validateField('message', formData.message);
+
+    if (!nameIsValid || !emailIsValid || !messageIsValid) {
+      toast({
+        title: "Erro de Validação",
+        description: "Por favor, corrija os campos destacados.",
+        variant: "destructive"
+      });
+      return; // Prevent submission
+    }
+
     setIsSubmitting(true);
 
     // Simular envio
@@ -94,6 +150,8 @@ const ContactFormEnhanced = () => {
 
       setIsSubmitting(false);
       setIsSubmitted(true);
+      setErrors({});
+      setTouched({});
       
       toast({
         title: "Mensagem enviada!",
@@ -148,10 +206,12 @@ const ContactFormEnhanced = () => {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+            onBlur={handleBlur}
+            className={`bg-white/10 border-white/20 text-white placeholder:text-gray-400 ${touched.name && errors.name ? 'border-red-500' : ''}`}
             placeholder="Seu nome"
-            required
+            // required - HTML5 validation can be removed if using custom
           />
+          {touched.name && errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
         </div>
         
         <div>
@@ -163,10 +223,12 @@ const ContactFormEnhanced = () => {
             name="email"
             value={formData.email}
             onChange={handleInputChange}
-            className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
+            onBlur={handleBlur}
+            className={`bg-white/10 border-white/20 text-white placeholder:text-gray-400 ${touched.email && errors.email ? 'border-red-500' : ''}`}
             placeholder="seu@email.com"
-            required
+            // required
           />
+          {touched.email && errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
         </div>
       </div>
 
@@ -232,10 +294,12 @@ const ContactFormEnhanced = () => {
           name="message"
           value={formData.message}
           onChange={handleInputChange}
-          className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 min-h-[120px]"
+            onBlur={handleBlur}
+            className={`bg-white/10 border-white/20 text-white placeholder:text-gray-400 min-h-[120px] ${touched.message && errors.message ? 'border-red-500' : ''}`}
           placeholder="Conte-nos sobre seu projeto, objetivos e expectativas..."
-          required
+            // required
         />
+          {touched.message && errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
       </div>
 
       {/* File Upload */}

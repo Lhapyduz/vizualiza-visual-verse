@@ -119,14 +119,17 @@ const ProjectModal = ({
           {/* Image Gallery Section - Only show if there are images */}
           {projectImages.length > 0 && (
             <div className="space-y-6">
-              <div className="relative group">
-                <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-gray-900">
+              <motion.div
+                className="relative group aspect-[4/3] overflow-hidden rounded-2xl bg-gray-900"
+                layoutId={`project-image-${project.id}`}
+              >
+                {/* <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-gray-900"> */}
                   <ImageZoom 
                     src={projectImages[currentImageIndex]} 
                     alt={`${project.title} - ${currentImageIndex + 1}`} 
-                    className="w-full h-full" 
+                    className="w-full h-full object-cover" // Ensure object-cover for proper scaling
                   />
-                </div>
+                {/* </div> */}
                 
                 {projectImages.length > 1 && (
                   <>

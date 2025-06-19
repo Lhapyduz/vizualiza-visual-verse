@@ -11,10 +11,40 @@ const NewsletterSignup = () => {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [error, setError] = useState<string | null>(null);
+  const [touched, setTouched] = useState<boolean>(false);
+
+  const validateEmail = (emailValue: string): boolean => {
+    if (!emailValue.trim()) {
+      setError("Email é obrigatório");
+      return false;
+    } else if (!/\S+@\S+\.\S+/.test(emailValue)) {
+      setError("Formato de email inválido");
+      return false;
+    }
+    setError(null);
+    return true;
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEmail = e.target.value;
+    setEmail(newEmail);
+    if (touched) {
+      validateEmail(newEmail);
+    }
+  };
+
+  const handleEmailBlur = () => {
+    setTouched(true);
+    validateEmail(email);
+  };
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    setTouched(true); // Mark as touched on submit attempt
+    if (!validateEmail(email)) {
+      return;
+    }
 
     setIsLoading(true);
 
@@ -82,10 +112,11 @@ const NewsletterSignup = () => {
           type="email"
           placeholder="Seu melhor email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="bg-white/10 border-white/20 text-white placeholder:text-gray-400"
-          required
+          onChange={handleEmailChange}
+          onBlur={handleEmailBlur}
+          className={`bg-white/10 border-white/20 text-white placeholder:text-gray-400 ${touched && error ? 'border-red-500' : ''}`}
         />
+        {touched && error && <p className="text-red-500 text-xs mt-1">{error}</p>}
         
         <Button
           type="submit"

@@ -39,7 +39,15 @@ const About = () => {
 
   const fadeInUp = {
     initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+        staggerChildren: 0.1 // Added stagger for children like icons
+      }
+    }
   };
 
   const fadeIn = {
@@ -47,13 +55,29 @@ const About = () => {
     animate: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } }
   };
 
+  const svgIconVariants = {
+    initial: { pathLength: 0, opacity: 0, scale: 0.8 }, // Start slightly smaller
+    animate: {
+      pathLength: 1,
+      opacity: 1,
+      scale: 1,
+      transition: { duration: 1, ease: "easeInOut", delay: 0.2 } // Icon animation starts slightly after card appears
+    }
+  };
+
+  // Pre-wrap icons with motion
+  const motionIcons = {
+    Eye: motion(Eye),
+    Target: motion(Target),
+    Lightbulb: motion(Lightbulb),
+    Users: motion(Users),
+  };
+
   return (
     <motion.section
       id="about"
       className="py-20 px-4 bg-vizualiza-bg-light relative overflow-hidden"
-      initial="initial"
-      whileInView="animate"
-      viewport={{ once: true }}
+      // Removed initial, whileInView, viewport from section as individual elements will handle their own
     >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
@@ -63,14 +87,12 @@ const About = () => {
         }} />
       </div>
 
-      <motion.div
-        className="max-w-6xl mx-auto relative z-10"
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true }}
-      >
+      <div className="max-w-6xl mx-auto relative z-10"> {/* Changed this to a regular div, children will be motion components */}
         <motion.div
           className="text-center mb-16"
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, amount: 0.3 }} // Trigger when 30% of element is in view
           variants={fadeInUp}
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
@@ -90,36 +112,64 @@ const About = () => {
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-          {values.map((value, index) => (
-            <motion.div
-              key={value.title}
-              className="relative group cursor-pointer"
-              variants={{ ...fadeInUp, animate: { ...fadeInUp.animate, transition: { ...fadeInUp.animate.transition, delay: 0.4 + index * 0.1 }}}}
-              onMouseEnter={() => setHoveredCard(index)}
-              onMouseLeave={() => setHoveredCard(null)}
-            >
-              <div className={`bg-gradient-to-br ${value.gradient} p-6 rounded-xl backdrop-blur-sm hover:bg-white/10 transition-all duration-500 group-hover:scale-105 border border-white/5 hover:border-white/20 relative overflow-hidden`}>
-                {/* Hover Glow Effect */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${value.gradient} opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-xl`} />
-                
-                {/* Icon with Enhanced Animation */}
-                <div className="relative z-10 mb-4">
-                  <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${value.gradient} flex items-center justify-center group-hover:scale-110 transition-all duration-300 relative`}>
-                    <value.icon className={`w-8 h-8 text-${value.color} group-hover:text-white transition-colors duration-300 drop-shadow-lg`} />
-                    {hoveredCard === index && (
-                      <div className={`absolute inset-0 bg-${value.color} rounded-full animate-ping opacity-30`} />
-                    )}
-                  </div>
-                </div>
-                
-                <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 transition-all duration-300">
-                  {value.title}
-                </h3>
-                <p className="text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors duration-300">
-                  {value.description}
-                </p>
+          {values.map((value, index) => {
+            const MotionIcon = motionIcons[value.icon.displayName as keyof typeof motionIcons || 'Eye']; // Fallback to Eye if needed
 
-                {/* Card Number */}
+            return (
+              <motion.div
+                key={value.title}
+                className="relative group cursor-pointer"
+                initial="initial" // Use the parent's initial state name
+                whileInView="animate" // Use the parent's animate state name
+                viewport={{ once: true, amount: 0.3 }} // Trigger when 30% of element is in view
+                variants={{
+                  initial: fadeInUp.initial, // Reuse from parent
+                  animate: {
+                    ...fadeInUp.animate, // Reuse from parent
+                    transition: {
+                      ...fadeInUp.animate.transition,
+                      delay: 0.4 + index * 0.1, // Stagger card appearance
+                      staggerChildren: 0.2 // Stagger children of this card (icon, text)
+                    }
+                  }
+                }}
+                onMouseEnter={() => setHoveredCard(index)}
+                onMouseLeave={() => setHoveredCard(null)}
+              >
+                <div className={`bg-gradient-to-br ${value.gradient} p-6 rounded-xl backdrop-blur-sm hover:bg-white/10 transition-all duration-500 group-hover:scale-105 border border-white/5 hover:border-white/20 relative overflow-hidden`}>
+                  {/* Hover Glow Effect */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${value.gradient} opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-xl`} />
+
+                  {/* Icon with Enhanced Animation */}
+                  <motion.div className="relative z-10 mb-4" variants={fadeInUp}> {/* Container for icon, inherits parent animation state */}
+                    <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${value.gradient} flex items-center justify-center group-hover:scale-110 transition-all duration-300 relative`}>
+                      <MotionIcon
+                        className={`w-8 h-8 text-${value.color} group-hover:text-white transition-colors duration-300 drop-shadow-lg`}
+                        variants={svgIconVariants}
+                        // initial="initial" // Already handled by parent variant propagation
+                        // animate="animate"
+                        strokeWidth={2} // Ensure stroke width for pathLength
+                      />
+                      {hoveredCard === index && (
+                        <div className={`absolute inset-0 bg-${value.color} rounded-full animate-ping opacity-30`} />
+                      )}
+                    </div>
+                  </motion.div>
+
+                  <motion.h3
+                    variants={fadeInUp} // Simple fade up for text, will be staggered by parent
+                    className="text-xl font-semibold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 transition-all duration-300"
+                  >
+                    {value.title}
+                  </motion.h3>
+                  <motion.p
+                    variants={fadeInUp} // Simple fade up for text
+                    className="text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors duration-300"
+                  >
+                    {value.description}
+                  </motion.p>
+
+                  {/* Card Number */}
                 <div className="absolute top-4 right-4 text-6xl font-bold text-white/5 group-hover:text-white/10 transition-colors duration-300">
                   {index + 1}
                 </div>
@@ -128,14 +178,26 @@ const About = () => {
           ))}
         </div>
 
+                  <div className="absolute top-4 right-4 text-6xl font-bold text-white/5 group-hover:text-white/10 transition-colors duration-300">
+                    {index + 1}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
         <motion.div
           className="bg-gradient-to-r from-vizualiza-purple/20 to-vizualiza-orange/20 p-8 rounded-xl backdrop-blur-sm border border-white/10 relative overflow-hidden"
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, amount: 0.2 }}
           variants={{ ...fadeIn, animate: { ...fadeIn.animate, transition: { ...fadeIn.animate.transition, delay: 0.8 }}}}
         >
           {/* Enhanced Background Effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-vizualiza-purple/10 to-vizualiza-orange/10 animate-gradient bg-300%" />
           
-          <div className="text-center relative z-10">
+          <motion.div className="text-center relative z-10" variants={fadeInUp}>
             <h3 className="text-2xl font-bold text-white mb-4 relative">
               Nossa Missão
               <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-16 h-0.5 bg-vizualiza-gradient animate-pulse" />
@@ -145,9 +207,9 @@ const About = () => {
               mas também comunicam efetivamente a essência de cada marca, criando 
               experiências que inspiram, engajam e geram resultados tangíveis.
             </p>
-          </div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
     </motion.section>
   );
 };

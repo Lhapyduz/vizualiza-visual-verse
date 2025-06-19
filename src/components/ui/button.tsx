@@ -47,9 +47,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+        whileHover={{ scale: 1.05, filter: "brightness(1.15)" }}
+        whileTap={{ scale: 0.95, filter: "brightness(0.9)" }}
+        transition={{
+          type: "spring",
+          stiffness: 400,
+          damping: 17,
+          filter: { duration: 0.1 } // Apply a quick duration for filter changes
+        }}
         {...props}
       />
     )

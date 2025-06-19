@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 import { Calendar, ArrowUpRight } from 'lucide-react';
@@ -18,7 +18,7 @@ const ProjectCard = ({ project, index, onClick }: ProjectCardProps) => {
       // No specific initial state here, relying on existing styles or initial prop of motion.div
     },
     hover: {
-      y: -8, // Keep existing hover effect
+      // y: -8, // Temporarily remove or adjust this to see how tilt interacts
       transition: { staggerChildren: 0.05, duration: 0.3 }
     }
   };
@@ -38,6 +38,29 @@ const ProjectCard = ({ project, index, onClick }: ProjectCardProps) => {
     hover: { y: -3, transition: { type: "spring", stiffness: 300, damping: 10, delay: 0.1 } }
   };
 
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  // Adjust input range based on typical card interaction distance
+  // e.g., if mouse moves 100px from center, it produces max rotation
+  const rotateX = useTransform(mouseY, [-100, 100], [5, -5], { clamp: false });
+  const rotateY = useTransform(mouseX, [-100, 100], [-5, 5], { clamp: false });
+
+
+  const handleMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    const { clientX, clientY, currentTarget } = event;
+    const { left, top, width, height } = currentTarget.getBoundingClientRect();
+    const x = clientX - left - width / 2;
+    const y = clientY - top - height / 2;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
   return (
     <motion.div
       variants={cardVariants}
@@ -45,18 +68,39 @@ const ProjectCard = ({ project, index, onClick }: ProjectCardProps) => {
       whileHover="hover"
       animate={{ opacity: 1, y: 0 }} // initial animation for card itself
       initial={{ opacity: 0, y: 50 }} // initial state for card itself
-      transition={{ duration: 0.6, delay: index * 0.1, y: { type: "spring", stiffness: 100 }, scale: { type: "spring", stiffness: 400, damping: 17 } }}
+      transition={{
+        duration: 0.6,
+        delay: index * 0.1,
+        y: { type: "spring", stiffness: 100 },
+        scale: { type: "spring", stiffness: 400, damping: 17 },
+        rotateX: { type: "spring", stiffness: 200, damping: 20 }, // Smoothing for reset
+        rotateY: { type: "spring", stiffness: 200, damping: 20 }  // Smoothing for reset
+      }}
       whileTap={{ scale: 0.98 }}
       className="group relative bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 hover:border-vizualiza-purple/50 transition-all duration-500 cursor-pointer"
       onClick={onClick}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d",
+        perspective: "800px" // Added perspective here for testing
+      }}
     >
       {/* Image Container */}
-      <div className="relative h-72 overflow-hidden">
+      <motion.div
+        className="relative h-72 overflow-hidden"
+        style={{ transformStyle: "preserve-3d" }}
+        layoutId={`project-image-${project.id}`}
+      >
+        {/* Ensure child elements can also be transformed in 3D if needed, or they might flatten. */}
         <LazyLoadImage
           src={project.featured_image || project.image}
           alt={project.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           effect="blur"
+          style={{ transform: "translateZ(0)" }} // Helps with layering in 3D
         />
         
         {/* Gradient Overlay */}

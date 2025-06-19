@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { ArrowDown, Palette, Camera, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ParticleBackground from './ParticleBackground';
@@ -41,9 +41,51 @@ const Hero = () => {
     animate: { opacity: 1, transition: { duration: 0.8, ease: "easeOut" } }
   };
 
+  const headlineText = "Vizualiza";
+  const headlineContainerVariants = {
+    animate: {
+      transition: {
+        staggerChildren: 0.07, // Adjust timing
+      },
+    },
+  };
+  const headlineCharVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } }, // Shorter duration for individual chars
+  };
+
+  const taglineText = "Comunicação Visual que Transforma e Inspira";
+  const taglineWordVariants = {
+    initial: { opacity: 0, y: 15 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  };
+
+
+  // Mouse-reactive tilt
+  const mouseX = useMotionValue(typeof window !== 'undefined' ? window.innerWidth / 2 : 0);
+  const mouseY = useMotionValue(typeof window !== 'undefined' ? window.innerHeight / 2 : 0);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseX.set(e.clientX);
+      mouseY.set(e.clientY);
+    };
+    if (typeof window !== 'undefined') {
+      window.addEventListener('mousemove', handleMouseMove);
+      return () => window.removeEventListener('mousemove', handleMouseMove);
+    }
+  }, [mouseX, mouseY]);
+
+  const rotateX = useTransform(mouseY, [0, typeof window !== 'undefined' ? window.innerHeight : 0], [5, -5], {
+    clamp: false,
+  });
+  const rotateY = useTransform(mouseX, [0, typeof window !== 'undefined' ? window.innerWidth : 0], [-5, 5], {
+    clamp: false,
+  });
+
 
   return (
-    <section id="hero" className="relative h-screen flex items-center justify-center overflow-hidden">
+    <section id="hero" className="relative h-screen flex items-center justify-center overflow-hidden" style={{ perspective: '1000px' }}>
       <ParticleBackground />
       
       {/* Enhanced Background with Parallax */}
@@ -89,31 +131,55 @@ const Hero = () => {
         initial="initial"
         whileInView="animate"
         viewport={{ once: true }}
+        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+        transition={{ type: "spring", stiffness: 100, damping: 20 }}
       >
-        <motion.div variants={fadeInUp}>
-          <h1 className="text-6xl md:text-8xl font-bold mb-6 relative">
-            <span className="bg-vizualiza-gradient bg-clip-text text-transparent animate-gradient bg-300% relative inline-block">
-              Vizualiza
-              <div className="absolute inset-0 bg-vizualiza-gradient bg-clip-text text-transparent blur-sm animate-pulse opacity-50" />
-            </span>
-          </h1>
+        {/* Headline with character stagger */}
+        <motion.h1
+          className="text-6xl md:text-8xl font-bold mb-6 relative bg-vizualiza-gradient bg-clip-text text-transparent animate-gradient bg-300%"
+          variants={headlineContainerVariants}
+          // Removed fadeInUp from here, apply to characters
+        >
+          {headlineText.split("").map((char, index) => (
+            <motion.span key={`${char}-${index}`} variants={headlineCharVariants} className="inline-block relative">
+              {char}
+              {/* Pulse effect can be tricky with individual spans. Consider applying to parent or simplifying. */}
+              {/* For simplicity, the global pulse div is kept, it might not align perfectly per character. */}
+            </motion.span>
+          ))}
+           <div className="absolute inset-0 bg-vizualiza-gradient bg-clip-text text-transparent blur-sm animate-pulse opacity-50" />
+        </motion.h1>
+
+        {/* Tagline with word stagger */}
+        <motion.p
+          className="text-xl md:text-2xl text-gray-300 mb-8"
+          variants={headlineContainerVariants} // Re-use container for stagger logic, adjust delay if needed
+          // The individual word spans will have their own animation variants triggered by this parent
+        >
+          {taglineText.split(" ").map((word, index, arr) => (
+            <motion.span key={`${word}-${index}`} variants={taglineWordVariants} className="inline-block mr-1.5">
+              {word === "Transforma" ? (
+                <span className="text-vizualiza-purple font-semibold relative">
+                  {word}
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-vizualiza-purple animate-pulse" />
+                </span>
+              ) : word === "Inspira" ? (
+                <span className="text-vizualiza-orange font-semibold relative">
+                  {word}
+                  <div className="absolute bottom-0 left-0 w-full h-0.5 bg-vizualiza-orange animate-pulse" style={{ animationDelay: '0.5s' }} />
+                </span>
+              ) : (
+                word
+              )}
+            </motion.span>
+          ))}
+        </motion.p>
           
-          <motion.p
-            className="text-xl md:text-2xl text-gray-300 mb-8"
-            variants={{ ...fadeInUp, animate: { ...fadeInUp.animate, transition: { ...fadeInUp.animate.transition, delay: 0.2 }}}}
-          >
-            Comunicação Visual que <span className="text-vizualiza-purple font-semibold relative">
-              Transforma
-              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-vizualiza-purple animate-pulse" />
-            </span> e <span className="text-vizualiza-orange font-semibold relative">
-              Inspira
-              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-vizualiza-orange animate-pulse" style={{ animationDelay: '0.5s' }} />
-            </span>
-          </motion.p>
-          
+        <motion.div variants={fadeInUp}> {/* This div wraps the second paragraph and icons, keeping its original animation */}
           <motion.p
             className="text-lg text-gray-400 mb-12 max-w-2xl mx-auto"
-            variants={{ ...fadeInUp, animate: { ...fadeInUp.animate, transition: { ...fadeInUp.animate.transition, delay: 0.4 }}}}
+            // Delay adjusted because parent fadeInUp has its own timing. Or make this a separate motion.div.
+            variants={{ ...fadeInUp, animate: { ...fadeInUp.animate, transition: { ...fadeInUp.animate.transition, delay: 0.6 }}}} // Increased delay
           >
             Criamos experiências visuais únicas que conectam sua marca ao seu público de forma autêntica e impactante.
           </motion.p>

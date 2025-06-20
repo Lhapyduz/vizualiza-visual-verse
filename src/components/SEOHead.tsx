@@ -34,46 +34,65 @@ const SEOHead = ({
   siteName = 'Vizualiza Visual Verse'
 }: SEOHeadProps) => {
   
+  // Ensure all values are properly converted to strings and filter out any problematic values
+  const safeString = (value: any): string => {
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'symbol') return '';
+    if (typeof value === 'function') return '';
+    return String(value);
+  };
+
+  // Safe values
+  const safeTitle = safeString(title);
+  const safeDescription = safeString(description);
+  const safeKeywords = safeString(keywords);
+  const safeImage = safeString(image);
+  const safeUrl = safeString(url);
+  const safeAuthor = safeString(author);
+  const safeLocale = safeString(locale);
+  const safeSiteName = safeString(siteName);
+  const safeType = safeString(type);
+
   // Generate schema markup for rich snippets
   const generateSchemaMarkup = () => {
     const baseSchema = {
       '@context': 'https://schema.org',
-      '@type': type === 'article' ? 'BlogPosting' : 'Organization',
-      name: siteName,
-      url: url,
-      description: description,
-      image: image
+      '@type': safeType === 'article' ? 'BlogPosting' : 'Organization',
+      name: safeSiteName,
+      url: safeUrl,
+      description: safeDescription,
+      image: safeImage
     };
 
-    if (type === 'article') {
+    if (safeType === 'article') {
       return {
         ...baseSchema,
         '@type': 'BlogPosting',
-        headline: title,
+        headline: safeTitle,
         author: {
           '@type': 'Person',
-          name: author
+          name: safeAuthor
         },
         publisher: {
           '@type': 'Organization',
-          name: siteName,
+          name: safeSiteName,
           logo: {
             '@type': 'ImageObject',
             url: 'https://images.unsplash.com/photo-1586953209889-5ce391d8cd9b?w=200&h=200&fit=crop'
           }
         },
-        datePublished: publishedTime,
-        dateModified: modifiedTime || publishedTime,
+        datePublished: safeString(publishedTime),
+        dateModified: safeString(modifiedTime || publishedTime),
         mainEntityOfPage: {
           '@type': 'WebPage',
-          '@id': url
+          '@id': safeUrl
         },
-        articleSection: section,
-        keywords: tags.join(', ')
+        articleSection: safeString(section),
+        keywords: tags.map(tag => safeString(tag)).join(', ')
       };
     }
 
-    if (type === 'website') {
+    if (safeType === 'website') {
       return {
         ...baseSchema,
         '@type': 'Organization',
@@ -115,38 +134,38 @@ const SEOHead = ({
   return (
     <Helmet>
       {/* Basic Meta Tags */}
-      <title>{title}</title>
-      <meta name="description" content={description} />
-      <meta name="keywords" content={keywords} />
-      <meta name="author" content={author} />
+      <title>{safeTitle}</title>
+      <meta name="description" content={safeDescription} />
+      <meta name="keywords" content={safeKeywords} />
+      <meta name="author" content={safeAuthor} />
       <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
       <meta name="language" content="Portuguese" />
       <meta name="revisit-after" content="7 days" />
       
       {/* Canonical URL */}
-      <link rel="canonical" href={url} />
+      <link rel="canonical" href={safeUrl} />
       
       {/* Open Graph Tags */}
-      <meta property="og:type" content={type} />
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
-      <meta property="og:image" content={image} />
+      <meta property="og:type" content={safeType} />
+      <meta property="og:title" content={safeTitle} />
+      <meta property="og:description" content={safeDescription} />
+      <meta property="og:image" content={safeImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content={title} />
-      <meta property="og:url" content={url} />
-      <meta property="og:site_name" content={siteName} />
-      <meta property="og:locale" content={locale} />
+      <meta property="og:image:alt" content={safeTitle} />
+      <meta property="og:url" content={safeUrl} />
+      <meta property="og:site_name" content={safeSiteName} />
+      <meta property="og:locale" content={safeLocale} />
       
       {/* Article specific OG tags */}
-      {type === 'article' && (
+      {safeType === 'article' && (
         <>
-          <meta property="article:author" content={author} />
-          {publishedTime && <meta property="article:published_time" content={publishedTime} />}
-          {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
-          {section && <meta property="article:section" content={section} />}
+          <meta property="article:author" content={safeAuthor} />
+          {publishedTime && <meta property="article:published_time" content={safeString(publishedTime)} />}
+          {modifiedTime && <meta property="article:modified_time" content={safeString(modifiedTime)} />}
+          {section && <meta property="article:section" content={safeString(section)} />}
           {tags.map((tag, index) => (
-            <meta key={index} property="article:tag" content={tag} />
+            <meta key={index} property="article:tag" content={safeString(tag)} />
           ))}
         </>
       )}
@@ -155,10 +174,10 @@ const SEOHead = ({
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:site" content="@vizualiza" />
       <meta name="twitter:creator" content="@vizualiza" />
-      <meta name="twitter:title" content={title} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={image} />
-      <meta name="twitter:image:alt" content={title} />
+      <meta name="twitter:title" content={safeTitle} />
+      <meta name="twitter:description" content={safeDescription} />
+      <meta name="twitter:image" content={safeImage} />
+      <meta name="twitter:image:alt" content={safeTitle} />
       
       {/* Additional Meta Tags */}
       <meta name="theme-color" content="#8B5CF6" />
@@ -180,7 +199,7 @@ const SEOHead = ({
       
       {/* Preconnect to improve performance */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link rel="preconnect" href="https://images.unsplash.com" />
       
       {/* DNS Prefetch */}

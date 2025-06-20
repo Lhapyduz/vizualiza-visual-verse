@@ -117,7 +117,7 @@ export const AnimatedCounter = ({
 
   return (
     <animated.span className={className}>
-      {number.to(n => Math.floor(n).toLocaleString())}{suffix}
+      {number.to((n: number) => Math.floor(n).toLocaleString())}{suffix}
     </animated.span>
   );
 };

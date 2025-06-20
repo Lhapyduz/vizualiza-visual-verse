@@ -1,18 +1,14 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
-import { supabase } from '@/integrations/supabase/client'; // Import Supabase client
+import { supabase } from '@/integrations/supabase/client';
 import { Instagram, Heart, MessageCircle, Share2, ExternalLink, Calendar, Music, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ScrollAnimation from './ScrollAnimation';
+import { GlassmorphismCard, FloatingCard } from './MicroInteractions';
 import { useSocialMedia } from '@/hooks/useSocialMedia';
-
-// Fetches and displays an Instagram feed.
-// This component relies on the `fetch-instagram-feed` Supabase Edge Function.
-// Ensure that the Edge Function is deployed and configured with the necessary
-// INSTAGRAM_ACCESS_TOKEN environment variable in your Supabase project settings
-// for the Instagram feed to work correctly.
 
 interface SocialPost {
   id: string;
@@ -36,25 +32,9 @@ const SocialFeed = () => {
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [activeTab, setActiveTab] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // Added error state
+  const [error, setError] = useState<string | null>(null);
 
   const activeSocialMedias = getActiveSocialMedias();
-
-  // Mock data for other platforms can be kept if needed, or removed entirely
-  // const mockPosts: SocialPost[] = [
-    // Example for other platforms if you want to mix
-    // {
-    //   id: 'tiktok1',
-    //   platform: 'tiktok',
-    //   content: 'Check out this cool TikTok dance!',
-    //   image: 'https://via.placeholder.com/300x500.png?text=TikTok+Video',
-    //   likes: 1000,
-    //   comments: 50,
-    //   date: '2024-03-10T12:00:00Z',
-    //   url: 'https://tiktok.com/@example',
-    //   author: { name: 'TikTok Star', avatar: '/placeholder.svg', handle: '@tiktokstar' }
-    // }
-  // ];
 
   useEffect(() => {
     const instagramIsActive = activeSocialMedias.some(sm => sm.platform.toLowerCase() === 'instagram');
@@ -76,37 +56,32 @@ const SocialFeed = () => {
               platform: 'instagram',
               content: post.caption || 'Visite nosso Instagram para ver mais!',
               image: post.media_url,
-              likes: 0, // Likes/comments not available from basic media endpoint
+              likes: 0,
               comments: 0,
               date: post.timestamp,
               url: post.permalink,
               author: {
-                name: 'Vizualiza', // Or your Instagram account name
-                avatar: '/icon-192x192.png', // A placeholder or your actual profile pic URL
-                handle: '@vizualizaoficial' // Your Instagram handle
+                name: 'Vizualiza',
+                avatar: '/icon-192x192.png',
+                handle: '@vizualizaoficial'
               }
             }));
-            // If you had other mock posts and want to merge:
-            // setPosts(prevPosts => [...instagramPosts, ...prevPosts.filter(p => p.platform !== 'instagram')]);
-            // For now, just set Instagram posts
             setPosts(instagramPosts);
           }
         } catch (err: any) {
           console.error("Error fetching Instagram posts:", err);
           setError(err.message || "Falha ao carregar posts do Instagram.");
-          setPosts([]); // Clear posts on error
+          setPosts([]);
         } finally {
           setIsLoading(false);
         }
       };
       fetchInstagramPosts();
     } else {
-      // Handle case where Instagram is not active - e.g., load other mock data or set empty
-      // setPosts(mockPosts.filter(p => p.platform !== 'instagram')); // Example if using other mocks
       setPosts([]);
       setIsLoading(false);
     }
-  }, [activeSocialMedias]); // Re-run if activeSocialMedias changes
+  }, [activeSocialMedias]);
 
   const filteredPosts = activeTab === 'all' 
     ? posts 
@@ -144,120 +119,144 @@ const SocialFeed = () => {
   };
 
   const SocialPostCard = ({ post }: { post: SocialPost }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 rounded-lg overflow-hidden backdrop-blur-sm border border-white/10 hover:bg-white/10 transition-all duration-300"
-    >
-      {/* Header */}
-      <div className="p-4 border-b border-white/10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <LazyLoadImage
-              src={post.author.avatar}
-              alt={post.author.name}
-              className="w-10 h-10 rounded-full object-cover"
-              effect="blur"
-            />
-            <div>
-              <h4 className="text-white font-medium">{post.author.name}</h4>
-              <p className="text-gray-400 text-sm">{post.author.handle}</p>
-            </div>
-          </div>
-          <div className={`p-2 rounded-full bg-gradient-to-r ${getPlatformColor(post.platform)}`}>
-            {getPlatformIcon(post.platform)}
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-4">
-        <p className="text-gray-300 mb-4 leading-relaxed line-clamp-3">{post.content}</p> {/* Added line-clamp */}
-        
-        {post.image && (
-          <div className="mb-4 rounded-lg overflow-hidden relative group"> {/* Added relative group */}
-            <a href={post.url} target="_blank" rel="noopener noreferrer">
+    <FloatingCard className="h-full">
+      <GlassmorphismCard 
+        intensity="medium" 
+        className="h-full flex flex-col overflow-hidden hover:border-white/30 transition-all duration-300"
+      >
+        {/* Header */}
+        <div className="p-4 border-b border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
               <LazyLoadImage
-                src={post.image}
-                alt="Post content"
-                className="w-full h-64 object-cover hover:scale-105 transition-transform duration-500"
+                src={post.author.avatar}
+                alt={post.author.name}
+                className="w-10 h-10 rounded-full object-cover border-2 border-white/20"
                 effect="blur"
               />
-              {post.platform === 'instagram' && (
-                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-4 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <Instagram className="w-10 h-10 text-white mb-2" />
-                  {post.content !== 'Visite nosso Instagram para ver mais!' && (
-                     <p className="text-white text-sm line-clamp-2">{post.content}</p>
-                  )}
-                </div>
+              <div>
+                <h4 className="text-white font-medium">{post.author.name}</h4>
+                <p className="text-gray-400 text-sm">{post.author.handle}</p>
+              </div>
+            </div>
+            <motion.div 
+              className={`p-2 rounded-full bg-gradient-to-r ${getPlatformColor(post.platform)}`}
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              transition={{ duration: 0.2 }}
+            >
+              {getPlatformIcon(post.platform)}
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-4 flex-1 flex flex-col">
+          <p className="text-gray-300 mb-4 leading-relaxed line-clamp-3 flex-shrink-0">
+            {post.content}
+          </p>
+          
+          {post.image && (
+            <div className="mb-4 rounded-lg overflow-hidden relative group flex-1">
+              <motion.a 
+                href={post.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <LazyLoadImage
+                  src={post.image}
+                  alt="Post content"
+                  className="w-full h-full min-h-[200px] object-cover transition-transform duration-500 group-hover:scale-110"
+                  effect="blur"
+                />
+                {post.platform === 'instagram' && (
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col items-center justify-center p-4 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.8, y: 20 }}
+                      whileHover={{ scale: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Instagram className="w-12 h-12 text-white mb-3" />
+                      <p className="text-white text-sm font-medium">Ver no Instagram</p>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </motion.a>
+            </div>
+          )}
+
+          {/* Stats */}
+          <div className="flex items-center justify-between text-sm text-gray-400 mb-4 flex-shrink-0">
+            <div className="flex items-center gap-4">
+              {post.platform !== 'instagram' ? (
+                <>
+                  <motion.div 
+                    className="flex items-center hover:text-red-400 transition-colors duration-200"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <Heart className="w-4 h-4 mr-1" />
+                    {post.likes}
+                  </motion.div>
+                  <motion.div 
+                    className="flex items-center hover:text-blue-400 transition-colors duration-200"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-1" />
+                    {post.comments}
+                  </motion.div>
+                </>
+              ) : (
+                <motion.div 
+                  className="flex items-center"
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <Instagram className="w-4 h-4 mr-1 text-pink-500" />
+                  <span className="text-xs">Ver no Instagram</span>
+                </motion.div>
               )}
-            </a>
+            </div>
+            <div className="flex items-center">
+              <Calendar className="w-4 h-4 mr-1" />
+              {new Date(post.date).toLocaleDateString('pt-BR')}
+            </div>
           </div>
-        )}
 
-        {/* Stats */}
-        <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
-          <div className="flex items-center gap-4">
-            {post.platform !== 'instagram' ? (
-              <>
-                <div className="flex items-center">
-                  <Heart className="w-4 h-4 mr-1" />
-                  {post.likes}
-                </div>
-                <div className="flex items-center">
-                  <MessageCircle className="w-4 h-4 mr-1" />
-                  {post.comments}
-                </div>
-              </>
-            ) : (
-              <div className="flex items-center"> {/* Placeholder or different stat for IG */}
-                 <Instagram className="w-4 h-4 mr-1 text-pink-500" />
-                 <span className="text-xs">Ver no Instagram</span>
-              </div>
-            )}
-            {post.platform !== 'instagram' && post.shares && (
-              <div className="flex items-center">
-                <Share2 className="w-4 h-4 mr-1" />
-                {post.shares}
-              </div>
-            )}
-          </div>
-          <div className="flex items-center">
-            <Calendar className="w-4 h-4 mr-1" />
-            {new Date(post.date).toLocaleDateString('pt-BR')}
+          {/* Actions */}
+          <div className="flex justify-between items-center flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-red-400 hover:bg-red-400/10"
+            >
+              <Heart className="w-4 h-4 mr-1" />
+              Curtir
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-blue-400 hover:bg-blue-400/10"
+            >
+              <MessageCircle className="w-4 h-4 mr-1" />
+              Comentar
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-vizualiza-purple hover:bg-vizualiza-purple/10"
+              onClick={() => window.open(post.url, '_blank')}
+            >
+              <ExternalLink className="w-4 h-4 mr-1" />
+              Ver original
+            </Button>
           </div>
         </div>
-
-        {/* Actions */}
-        <div className="flex justify-between items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-red-400"
-          >
-            <Heart className="w-4 h-4 mr-1" />
-            Curtir
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-blue-400"
-          >
-            <MessageCircle className="w-4 h-4 mr-1" />
-            Comentar
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-400 hover:text-vizualiza-purple"
-            onClick={() => window.open(post.url, '_blank')}
-          >
-            <ExternalLink className="w-4 h-4 mr-1" />
-            Ver original
-          </Button>
-        </div>
-      </div>
-    </motion.div>
+      </GlassmorphismCard>
+    </FloatingCard>
   );
 
   if (isLoading || socialLoading) {
@@ -265,7 +264,11 @@ const SocialFeed = () => {
       <section className="py-20 px-4 bg-vizualiza-bg-dark">
         <div className="max-w-6xl mx-auto">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-vizualiza-purple mx-auto mb-4"></div>
+            <motion.div
+              className="animate-spin rounded-full h-16 w-16 border-b-2 border-vizualiza-purple mx-auto mb-4"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
             <p className="text-gray-400">Carregando feed social...</p>
           </div>
         </div>
@@ -307,15 +310,15 @@ const SocialFeed = () => {
 
         <ScrollAnimation direction="up" delay={0.2}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-            <TabsList className="grid w-full max-w-md mx-auto bg-white/5" style={{ gridTemplateColumns: `repeat(${Math.min(activeSocialMedias.length + 1, 4)}, 1fr)` }}>
-              <TabsTrigger value="all" className="data-[state=active]:bg-vizualiza-purple">
+            <TabsList className="grid w-full max-w-md mx-auto bg-white/5 backdrop-blur-md border border-white/10" style={{ gridTemplateColumns: `repeat(${Math.min(activeSocialMedias.length + 1, 4)}, 1fr)` }}>
+              <TabsTrigger value="all" className="data-[state=active]:bg-vizualiza-purple data-[state=active]:text-white">
                 Todos
               </TabsTrigger>
               {activeSocialMedias.slice(0, 3).map((social) => (
                 <TabsTrigger 
                   key={social.id} 
                   value={social.platform.toLowerCase()} 
-                  className="data-[state=active]:bg-vizualiza-purple"
+                  className="data-[state=active]:bg-vizualiza-purple data-[state=active]:text-white"
                 >
                   {social.platform}
                 </TabsTrigger>
@@ -325,20 +328,28 @@ const SocialFeed = () => {
         </ScrollAnimation>
 
         {error && (
-          <div className="text-center py-16 text-red-500">
+          <motion.div 
+            className="text-center py-16 text-red-400"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
             <p>Erro ao carregar o feed: {error}</p>
-          </div>
+          </motion.div>
         )}
 
         {!isLoading && !error && filteredPosts.length === 0 && (
-          <div className="text-center py-16">
+          <motion.div 
+            className="text-center py-16"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
             <p className="text-gray-400 text-lg">
               Nenhum post encontrado para esta rede social.
             </p>
-          </div>
+          </motion.div>
         )}
 
-        {!error && ( // Only render grid if no error
+        {!error && (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence>
               {filteredPosts.map((post, index) => (
@@ -356,14 +367,15 @@ const SocialFeed = () => {
             <h3 className="text-2xl font-bold text-white mb-6">Siga-nos</h3>
             <div className="flex flex-wrap justify-center gap-4">
               {activeSocialMedias.map((social) => (
-                <Button
-                  key={social.id}
-                  onClick={() => window.open(social.url, '_blank')}
-                  className={`bg-gradient-to-r ${social.color} hover:opacity-80`}
-                >
-                  {getPlatformIcon(social.platform.toLowerCase())}
-                  <span className="ml-2">{social.platform}</span>
-                </Button>
+                <motion.div key={social.id} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    onClick={() => window.open(social.url, '_blank')}
+                    className={`bg-gradient-to-r ${social.color} hover:opacity-80 border border-white/20 backdrop-blur-sm`}
+                  >
+                    {getPlatformIcon(social.platform.toLowerCase())}
+                    <span className="ml-2">{social.platform}</span>
+                  </Button>
+                </motion.div>
               ))}
             </div>
           </div>

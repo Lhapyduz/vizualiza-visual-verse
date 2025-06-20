@@ -108,9 +108,9 @@ const Hero = () => {
               left: `${5 + (i * 8)}%`,
               top: `${10 + (i % 4) * 20}%`,
               background: `linear-gradient(135deg, ${
-                ['#8B5CF6', '#FF6B35', '#32D74B', '#FF2D92'][i % 4]
+                ['#8B5CF6', '#6366F1', '#3B82F6', '#06B6D4'][i % 4]
               }20, transparent)`,
-              borderColor: `${['#8B5CF6', '#FF6B35', '#32D74B', '#FF2D92'][i % 4]}40`,
+              borderColor: `${['#8B5CF6', '#6366F1', '#3B82F6', '#06B6D4'][i % 4]}40`,
             }}
             animate={{
               y: [-20, 20, -20],
@@ -253,9 +253,9 @@ const Hero = () => {
             variants={staggerContainer}
           >
             {[
-              { icon: Palette, label: 'Design', color: 'vizualiza-purple', bgColor: 'bg-purple-500/20' },
-              { icon: Camera, label: 'Fotografia', color: 'vizualiza-orange', bgColor: 'bg-orange-500/20' },
-              { icon: Sparkles, label: 'Identidade', color: 'vizualiza-green', bgColor: 'bg-green-500/20' }
+              { icon: Palette, label: 'Design', color: 'purple-500', bgColor: 'bg-purple-500/20' },
+              { icon: Camera, label: 'Fotografia', color: 'blue-500', bgColor: 'bg-blue-500/20' },
+              { icon: Sparkles, label: 'Identidade', color: 'cyan-500', bgColor: 'bg-cyan-500/20' }
             ].map((item, index) => (
               <motion.div
                 key={item.label}
@@ -283,7 +283,7 @@ const Hero = () => {
                 
                 {/* Floating indicator */}
                 <motion.div
-                  className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-vizualiza-purple to-vizualiza-orange rounded-full opacity-0 group-hover:opacity-100"
+                  className="absolute -top-2 -right-2 w-4 h-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full opacity-0 group-hover:opacity-100"
                   animate={{ rotate: 360 }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                 />
@@ -292,21 +292,21 @@ const Hero = () => {
           </motion.div>
         </ScrollAnimation>
 
-        {/* Enhanced CTA Button */}
+        {/* Enhanced CTA Button with New Color */}
         <ScrollAnimation direction="up" delay={1}>
           <motion.div
             variants={fadeInUp}
             className="relative"
             whileHover={{ 
               scale: 1.05,
-              boxShadow: "0 20px 40px rgba(255, 193, 7, 0.3)"
+              boxShadow: "0 20px 40px rgba(139, 92, 246, 0.4)"
             }}
             whileTap={{ scale: 0.95 }}
           >
             <Button
               onClick={scrollToPortfolio}
               size="lg"
-              className="group relative bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500 text-black px-10 py-6 text-lg font-semibold rounded-2xl shadow-2xl hover:shadow-yellow-400/25 transition-all duration-500 border-2 border-yellow-400/30 hover:border-yellow-400/60 overflow-hidden"
+              className="group relative bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-10 py-6 text-lg font-semibold rounded-2xl shadow-2xl hover:shadow-purple-600/25 transition-all duration-500 border-2 border-purple-500/30 hover:border-purple-500/60 overflow-hidden"
             >
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
@@ -325,9 +325,9 @@ const Hero = () => {
               </span>
             </Button>
             
-            {/* Button glow effect */}
+            {/* Button glow effect with new color */}
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500"
+              className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500"
               animate={{ 
                 scale: [1, 1.1, 1],
                 opacity: [0.2, 0.4, 0.2]

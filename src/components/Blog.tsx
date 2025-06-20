@@ -125,7 +125,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
 
   if (isLoading) {
     return (
-      <section id="blog" className="py-20 px-4 bg-vizualiza-bg-light">
+      <section id="blog" className="py-20 px-4 bg-vizualiza-bg-dark">
         <div className="max-w-7xl mx-auto">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-vizualiza-purple mx-auto"></div>
@@ -137,7 +137,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
   }
 
   return (
-    <section id="blog" className="py-20 px-4 bg-vizualiza-bg-light">
+    <section id="blog" className="py-20 px-4 bg-vizualiza-bg-dark">
       <div className="max-w-7xl mx-auto">
         <ScrollAnimation direction="up">
           <div className="text-center mb-16">
@@ -156,7 +156,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                 </Button>
               )}
             </div>
-            <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
               Descubra insights, tendências e dicas do mundo do design através 
               dos nossos artigos especializados.
             </p>
@@ -182,8 +182,8 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                 variant={selectedCategory === category ? "default" : "outline"}
                 className={`px-6 py-2 transition-all duration-300 hover:scale-105 ${
                   selectedCategory === category
-                    ? 'bg-vizualiza-purple hover:bg-vizualiza-purple-dark text-white'
-                    : 'border-vizualiza-purple text-gray-700 hover:bg-vizualiza-purple hover:text-white'
+                    ? 'bg-vizualiza-purple hover:bg-vizualiza-purple-dark text-white shadow-lg shadow-vizualiza-purple/30'
+                    : 'border-vizualiza-purple text-white hover:bg-vizualiza-purple hover:text-white hover:shadow-lg hover:shadow-vizualiza-purple/20'
                 }`}
               >
                 {category}
@@ -197,8 +197,8 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
           {filteredPosts.map((post, index) => (
             <ScrollAnimation key={post.id} direction="up" delay={index * 0.1}>
               <motion.article 
-                className="group bg-white/5 rounded-lg overflow-hidden backdrop-blur-sm hover:bg-white/10 transition-all duration-300 cursor-pointer"
-                whileHover={{ scale: 1.05, y: -5 }}
+                className="group bg-white/10 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 hover:bg-white/15 hover:border-white/20 transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl hover:shadow-vizualiza-purple/20"
+                whileHover={{ scale: 1.02, y: -8 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => openPostModal(post)}
               >
@@ -210,34 +210,35 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                     effect="blur"
                   />
                   <div className="absolute top-4 left-4">
-                    <span className="bg-vizualiza-orange text-white text-sm font-medium px-3 py-1 rounded-full">
+                    <span className="bg-vizualiza-orange text-white text-sm font-medium px-3 py-1 rounded-full shadow-lg">
                       {post.category}
                     </span>
                   </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
                 
                 <div className="p-6">
-                  <div className="flex items-center justify-between mb-3 text-sm text-gray-600">
+                  <div className="flex items-center justify-between mb-3 text-sm text-gray-300">
                     <div className="flex items-center">
                       <User className="w-4 h-4 mr-1" />
-                      {post.author}
+                      <span className="text-white font-medium">{post.author}</span>
                     </div>
                     <div className="flex items-center">
                       <Clock className="w-4 h-4 mr-1" />
-                      {post.read_time || post.readTime}
+                      <span className="text-gray-300">{post.read_time || post.readTime}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center text-gray-600 text-sm mb-3">
+                  <div className="flex items-center text-gray-300 text-sm mb-3">
                     <Calendar className="w-4 h-4 mr-1" />
                     {new Date(post.date).toLocaleDateString('pt-BR')}
                   </div>
                   
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3 group-hover:text-vizualiza-purple transition-colors duration-300">
+                  <h3 className="text-xl font-bold text-white mb-3 group-hover:text-vizualiza-purple transition-colors duration-300 leading-tight">
                     {post.title}
                   </h3>
                   
-                  <p className="text-gray-700 mb-4 leading-relaxed">
+                  <p className="text-gray-300 mb-4 leading-relaxed text-sm">
                     {post.excerpt}
                   </p>
                   
@@ -245,7 +246,7 @@ const Blog = ({ isAdmin = false, onEditPost }: BlogProps) => {
                     {(post.tags || []).map((tag) => (
                       <span 
                         key={tag}
-                        className="inline-flex items-center px-3 py-1 bg-vizualiza-purple/20 text-vizualiza-purple text-xs rounded-full hover:bg-vizualiza-purple/30 transition-colors duration-200"
+                        className="inline-flex items-center px-3 py-1 bg-vizualiza-purple/20 text-vizualiza-purple text-xs rounded-full hover:bg-vizualiza-purple/30 transition-colors duration-200 border border-vizualiza-purple/30"
                       >
                         <Tag className="w-3 h-3 mr-1" />
                         {tag}

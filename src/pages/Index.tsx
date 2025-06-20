@@ -1,4 +1,3 @@
-
 import Hero from '@/components/Hero';
 import Navbar from '@/components/Navbar';
 import Portfolio from '@/components/Portfolio';
@@ -11,7 +10,7 @@ import ChatBot from '@/components/ChatBot';
 import VoiceCommands from '@/components/VoiceCommands';
 import Blog from '@/components/Blog';
 import NewsletterSignup from '@/components/NewsletterSignup';
-// import SocialFeed from '@/components/SocialFeed'; // Removed import
+import SocialFeed from '@/components/SocialFeed';
 import SEOHead from '@/components/SEOHead';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
@@ -52,7 +51,7 @@ const Index = () => {
     },
     onSwipeLeft: () => {
       // Ir para próxima seção
-      const sections = ['hero', 'about', 'portfolio', 'blog', 'contact'];
+      const sections = ['hero', 'about', 'portfolio', 'blog', 'social', 'contact'];
       const currentSection = getCurrentSection();
       const currentIndex = sections.indexOf(currentSection);
       const nextIndex = (currentIndex + 1) % sections.length;
@@ -60,7 +59,7 @@ const Index = () => {
     },
     onSwipeRight: () => {
       // Ir para seção anterior
-      const sections = ['hero', 'about', 'portfolio', 'blog', 'contact'];
+      const sections = ['hero', 'about', 'portfolio', 'blog', 'social', 'contact'];
       const currentSection = getCurrentSection();
       const currentIndex = sections.indexOf(currentSection);
       const prevIndex = (currentIndex - 1 + sections.length) % sections.length;
@@ -69,7 +68,7 @@ const Index = () => {
   });
 
   const getCurrentSection = () => {
-    const sections = ['hero', 'about', 'portfolio', 'blog', 'contact'];
+    const sections = ['hero', 'about', 'portfolio', 'blog', 'social', 'contact'];
     const scrollPosition = window.scrollY + window.innerHeight / 2;
     
     for (const section of sections) {
@@ -175,9 +174,9 @@ const Index = () => {
             isAdmin={isAdminLoggedIn}
             onEditPost={handleEditPost}
           />
-          {/* <div id="social">
+          <div id="social">
             <SocialFeed />
-          </div> */} {/* Removed SocialFeed component rendering */}
+          </div>
           <div className="py-20 px-4 bg-vizualiza-bg-dark">
             <div className="max-w-4xl mx-auto">
               <NewsletterSignup />

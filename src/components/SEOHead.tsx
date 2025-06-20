@@ -39,7 +39,17 @@ const SEOHead = ({
     if (value === null || value === undefined) return '';
     if (typeof value === 'symbol') return '';
     if (typeof value === 'function') return '';
+    if (typeof value === 'object') return '';
     return String(value);
+  };
+
+  // Safe array filter to remove any non-string values
+  const safeArray = (arr: any[]): string[] => {
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .filter(item => item !== null && item !== undefined && typeof item !== 'symbol' && typeof item !== 'function')
+      .map(item => safeString(item))
+      .filter(item => item.length > 0);
   };
 
   // Safe values
@@ -52,6 +62,7 @@ const SEOHead = ({
   const safeLocale = safeString(locale);
   const safeSiteName = safeString(siteName);
   const safeType = safeString(type);
+  const safeTags = safeArray(tags);
 
   // Generate schema markup for rich snippets
   const generateSchemaMarkup = () => {
@@ -88,7 +99,7 @@ const SEOHead = ({
           '@id': safeUrl
         },
         articleSection: safeString(section),
-        keywords: tags.map(tag => safeString(tag)).join(', ')
+        keywords: safeTags.join(', ')
       };
     }
 
@@ -164,8 +175,8 @@ const SEOHead = ({
           {publishedTime && <meta property="article:published_time" content={safeString(publishedTime)} />}
           {modifiedTime && <meta property="article:modified_time" content={safeString(modifiedTime)} />}
           {section && <meta property="article:section" content={safeString(section)} />}
-          {tags.map((tag, index) => (
-            <meta key={index} property="article:tag" content={safeString(tag)} />
+          {safeTags.map((tag, index) => (
+            <meta key={`article-tag-${index}`} property="article:tag" content={tag} />
           ))}
         </>
       )}

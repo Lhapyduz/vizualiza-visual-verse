@@ -7,27 +7,27 @@ const Analytics = () => {
   const stats = [
     {
       title: 'Visualizações Totais',
-      value: '12,543',
+      value: '0',
       icon: Eye,
-      trend: '+12.5%'
+      trend: '0%'
     },
     {
       title: 'Visitantes Únicos',
-      value: '8,234',
+      value: '0',
       icon: Users,
-      trend: '+8.2%'
+      trend: '0%'
     },
     {
       title: 'Posts do Blog',
-      value: '45',
+      value: '0',
       icon: BarChart3,
-      trend: '+3 este mês'
+      trend: '-'
     },
     {
       title: 'Crescimento',
-      value: '23.1%',
+      value: '0%',
       icon: TrendingUp,
-      trend: '+2.4%'
+      trend: '0%'
     }
   ];
 
@@ -65,9 +65,9 @@ const Analytics = () => {
           <CardContent>
             <div className="space-y-4">
               {[
-                { title: 'Tendências de Design 2024', views: '2,543' },
-                { title: 'Guia de UX/UI', views: '1,832' },
-                { title: 'Cores e Tipografia', views: '1,234' }
+                { title: 'Tendências de Design 2024', views: '0' },
+                { title: 'Guia de UX/UI', views: '0' },
+                { title: 'Cores e Tipografia', views: '0' }
               ].map((post, index) => (
                 <div key={index} className="flex justify-between items-center">
                   <span className="text-gray-300">{post.title}</span>

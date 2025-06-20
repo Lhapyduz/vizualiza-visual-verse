@@ -18,28 +18,28 @@ const Analytics = () => {
     // Simular dados de analytics
     const mockData: AnalyticsData = {
       pageViews: [
-        { name: 'Início', views: 1250 },
-        { name: 'Portfólio', views: 890 },
-        { name: 'Sobre', views: 650 },
-        { name: 'Contato', views: 430 },
+        { name: 'Início', views: 0 },
+        { name: 'Portfólio', views: 0 },
+        { name: 'Sobre', views: 0 },
+        { name: 'Contato', views: 0 },
       ],
       userStats: {
-        visitors: 2847,
-        newUsers: 1654,
-        avgTime: '3:42'
+        visitors: 0,
+        newUsers: 0,
+        avgTime: '0:00'
       },
       deviceStats: [
-        { name: 'Desktop', value: 45, color: '#8B5CF6' },
-        { name: 'Mobile', value: 40, color: '#F97316' },
-        { name: 'Tablet', value: 15, color: '#10B981' },
+        { name: 'Desktop', value: 0, color: '#8B5CF6' },
+        { name: 'Mobile', value: 0, color: '#F97316' },
+        { name: 'Tablet', value: 0, color: '#10B981' },
       ],
       monthlyViews: [
-        { month: 'Jan', views: 800 },
-        { month: 'Fev', views: 950 },
-        { month: 'Mar', views: 1200 },
-        { month: 'Abr', views: 1100 },
-        { month: 'Mai', views: 1400 },
-        { month: 'Jun', views: 1650 },
+        { month: 'Jan', views: 0 },
+        { month: 'Fev', views: 0 },
+        { month: 'Mar', views: 0 },
+        { month: 'Abr', views: 0 },
+        { month: 'Mai', views: 0 },
+        { month: 'Jun', views: 0 },
       ]
     };
 

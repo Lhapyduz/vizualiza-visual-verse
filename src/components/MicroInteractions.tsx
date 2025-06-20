@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useSpring, animated } from '@react-spring/web';
@@ -117,7 +116,7 @@ export const AnimatedCounter = ({
 
   return (
     <animated.span className={className}>
-      {number.to((n: number) => Math.floor(n).toLocaleString())}{suffix}
+      {number.to((n: number) => `${Math.floor(n).toLocaleString()}${suffix}`)}
     </animated.span>
   );
 };

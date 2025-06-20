@@ -213,9 +213,10 @@ const Hero = () => {
           <Button
             onClick={scrollToPortfolio}
             size="lg"
-            className="bg-vizualiza-purple hover:bg-vizualiza-purple-dark text-white px-8 py-4 text-lg hover:scale-110 transition-all duration-300 relative overflow-hidden group border-2 border-transparent hover:border-vizualiza-purple/50"
+            className="bg-yellow-500 hover:bg-yellow-600 text-black px-8 py-4 text-lg hover:scale-110 transition-all duration-300 relative overflow-hidden group border-2 border-transparent hover:border-yellow-700/50"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-vizualiza-purple to-vizualiza-orange opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
+            {/* The inner gradient div might need adjustment or removal if it clashes with yellow */}
+            {/* <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300" /> */}
             <span className="relative z-10">Ver Portfólio</span>
             <ArrowDown className="ml-2 w-5 h-5 group-hover:translate-y-1 transition-transform duration-300" />
           </Button>

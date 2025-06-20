@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
@@ -58,10 +57,9 @@ const ProjectCard = ({ project, index, onClick }: ProjectCardProps) => {
   return (
     <motion.div
       variants={cardVariants}
-      initial="rest"
-      whileHover="hover"
-      animate={{ opacity: 1, y: 0 }}
       initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover="hover"
       transition={{
         duration: 0.6,
         delay: index * 0.1,

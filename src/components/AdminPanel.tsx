@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, FolderOpen, FileText, Tag, BarChart3, Share2, Plus, Sparkles } from 'lucide-react';
@@ -64,7 +65,7 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
     try {
       if (editingProject) {
         const { images, ...projectInfo } = data;
-        const imageUrls = images?.map(img => typeof img === 'string' ? img : img.url) || [];
+        const imageUrls = images?.map(img => typeof img === 'string' ? img : img.image_url || img.url || '') || [];
         await updateProject({
           id: editingProject.id,
           ...projectInfo,
@@ -72,7 +73,7 @@ const AdminPanel = ({ onClose, editingProject, editingPost, onClearEditingProjec
         });
       } else {
         const { images, ...projectInfo } = data;
-        const imageUrls = images?.map(img => typeof img === 'string' ? img : img.url) || [];
+        const imageUrls = images?.map(img => typeof img === 'string' ? img : img.image_url || img.url || '') || [];
         await createProject({
           ...projectInfo,
           images: imageUrls

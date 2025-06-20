@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { motion, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { ArrowDown, Palette, Camera, Sparkles, MousePointer2 } from 'lucide-react';
@@ -298,16 +297,16 @@ const Hero = () => {
           <motion.div
             variants={fadeInUp}
             className="relative"
+            whileHover={{ 
+              scale: 1.05,
+              boxShadow: "0 20px 40px rgba(255, 193, 7, 0.3)"
+            }}
+            whileTap={{ scale: 0.95 }}
           >
             <Button
               onClick={scrollToPortfolio}
               size="lg"
               className="group relative bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500 text-black px-10 py-6 text-lg font-semibold rounded-2xl shadow-2xl hover:shadow-yellow-400/25 transition-all duration-500 border-2 border-yellow-400/30 hover:border-yellow-400/60 overflow-hidden"
-              whileHover={{ 
-                scale: 1.05,
-                boxShadow: "0 20px 40px rgba(255, 193, 7, 0.3)"
-              }}
-              whileTap={{ scale: 0.95 }}
             >
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"

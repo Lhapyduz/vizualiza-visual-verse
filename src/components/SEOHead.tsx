@@ -96,6 +96,22 @@ const SEOHead = ({
 
   const schemaMarkup = generateSchemaMarkup();
 
+  // Safe JSON stringify function that handles potential Symbol values
+  const safeJsonStringify = (obj: any) => {
+    try {
+      return JSON.stringify(obj, (key, value) => {
+        // Filter out Symbol values and other non-serializable values
+        if (typeof value === 'symbol' || typeof value === 'function' || typeof value === 'undefined') {
+          return undefined;
+        }
+        return value;
+      });
+    } catch (error) {
+      console.warn('Error stringifying schema markup:', error);
+      return '{}';
+    }
+  };
+
   return (
     <Helmet>
       {/* Basic Meta Tags */}
@@ -159,7 +175,7 @@ const SEOHead = ({
       
       {/* Schema.org JSON-LD */}
       <script type="application/ld+json">
-        {JSON.stringify(schemaMarkup)}
+        {safeJsonStringify(schemaMarkup)}
       </script>
       
       {/* Preconnect to improve performance */}

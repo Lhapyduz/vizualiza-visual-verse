@@ -213,7 +213,7 @@ const Hero = () => {
           <Button
             onClick={scrollToPortfolio}
             size="lg"
-            className="bg-yellow-500 hover:bg-yellow-600 text-black px-8 py-4 text-lg hover:scale-110 transition-all duration-300 relative overflow-hidden group border-2 border-transparent hover:border-yellow-700/50"
+            className="bg-yellow-400 hover:bg-yellow-500 text-black px-8 py-4 text-lg hover:scale-110 transition-all duration-300 relative overflow-hidden group border-2 border-transparent hover:border-yellow-700/50"
           >
             {/* The inner gradient div might need adjustment or removal if it clashes with yellow */}
             {/* <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300" /> */}

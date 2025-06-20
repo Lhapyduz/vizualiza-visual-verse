@@ -45,7 +45,7 @@ const About = () => {
       transition: {
         duration: 0.6,
         ease: "easeOut",
-        staggerChildren: 0.1 // Added stagger for children like icons
+        staggerChildren: 0.1
       }
     }
   };
@@ -56,16 +56,15 @@ const About = () => {
   };
 
   const svgIconVariants = {
-    initial: { pathLength: 0, opacity: 0, scale: 0.8 }, // Start slightly smaller
+    initial: { pathLength: 0, opacity: 0, scale: 0.8 },
     animate: {
       pathLength: 1,
       opacity: 1,
       scale: 1,
-      transition: { duration: 1, ease: "easeInOut", delay: 0.2 } // Icon animation starts slightly after card appears
+      transition: { duration: 1, ease: "easeInOut", delay: 0.2 }
     }
   };
 
-  // Pre-wrap icons with motion
   const motionIcons = {
     Eye: motion(Eye),
     Target: motion(Target),
@@ -77,7 +76,6 @@ const About = () => {
     <motion.section
       id="about"
       className="py-20 px-4 bg-vizualiza-bg-light relative overflow-hidden"
-      // Removed initial, whileInView, viewport from section as individual elements will handle their own
     >
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
@@ -87,12 +85,12 @@ const About = () => {
         }} />
       </div>
 
-      <div className="max-w-6xl mx-auto relative z-10"> {/* Changed this to a regular div, children will be motion components */}
+      <div className="max-w-6xl mx-auto relative z-10">
         <motion.div
           className="text-center mb-16"
           initial="initial"
           whileInView="animate"
-          viewport={{ once: true, amount: 0.3 }} // Trigger when 30% of element is in view
+          viewport={{ once: true, amount: 0.3 }}
           variants={fadeInUp}
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
@@ -113,23 +111,23 @@ const About = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           {values.map((value, index) => {
-            const MotionIcon = motionIcons[value.icon.displayName as keyof typeof motionIcons || 'Eye']; // Fallback to Eye if needed
+            const MotionIcon = motionIcons[value.icon.displayName as keyof typeof motionIcons || 'Eye'];
 
             return (
               <motion.div
                 key={value.title}
                 className="relative group cursor-pointer"
-                initial="initial" // Use the parent's initial state name
-                whileInView="animate" // Use the parent's animate state name
-                viewport={{ once: true, amount: 0.3 }} // Trigger when 30% of element is in view
+                initial="initial"
+                whileInView="animate"
+                viewport={{ once: true, amount: 0.3 }}
                 variants={{
-                  initial: fadeInUp.initial, // Reuse from parent
+                  initial: fadeInUp.initial,
                   animate: {
-                    ...fadeInUp.animate, // Reuse from parent
+                    ...fadeInUp.animate,
                     transition: {
                       ...fadeInUp.animate.transition,
-                      delay: 0.4 + index * 0.1, // Stagger card appearance
-                      staggerChildren: 0.2 // Stagger children of this card (icon, text)
+                      delay: 0.4 + index * 0.1,
+                      staggerChildren: 0.2
                     }
                   }
                 }}
@@ -141,14 +139,12 @@ const About = () => {
                   <div className={`absolute inset-0 bg-gradient-to-br ${value.gradient} opacity-0 group-hover:opacity-30 transition-opacity duration-500 blur-xl`} />
 
                   {/* Icon with Enhanced Animation */}
-                  <motion.div className="relative z-10 mb-4" variants={fadeInUp}> {/* Container for icon, inherits parent animation state */}
+                  <motion.div className="relative z-10 mb-4" variants={fadeInUp}>
                     <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${value.gradient} flex items-center justify-center group-hover:scale-110 transition-all duration-300 relative`}>
                       <MotionIcon
                         className={`w-8 h-8 text-${value.color} group-hover:text-white transition-colors duration-300 drop-shadow-lg`}
                         variants={svgIconVariants}
-                        // initial="initial" // Already handled by parent variant propagation
-                        // animate="animate"
-                        strokeWidth={2} // Ensure stroke width for pathLength
+                        strokeWidth={2}
                       />
                       {hoveredCard === index && (
                         <div className={`absolute inset-0 bg-${value.color} rounded-full animate-ping opacity-30`} />
@@ -157,27 +153,19 @@ const About = () => {
                   </motion.div>
 
                   <motion.h3
-                    variants={fadeInUp} // Simple fade up for text, will be staggered by parent
+                    variants={fadeInUp}
                     className="text-xl font-semibold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 transition-all duration-300"
                   >
                     {value.title}
                   </motion.h3>
                   <motion.p
-                    variants={fadeInUp} // Simple fade up for text
+                    variants={fadeInUp}
                     className="text-gray-400 leading-relaxed group-hover:text-gray-300 transition-colors duration-300"
                   >
                     {value.description}
                   </motion.p>
 
                   {/* Card Number */}
-                <div className="absolute top-4 right-4 text-6xl font-bold text-white/5 group-hover:text-white/10 transition-colors duration-300">
-                  {index + 1}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
                   <div className="absolute top-4 right-4 text-6xl font-bold text-white/5 group-hover:text-white/10 transition-colors duration-300">
                     {index + 1}
                   </div>

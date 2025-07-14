@@ -76,7 +76,14 @@ const SocialFeed = () => {
           setIsLoading(false);
         }
       };
+      
+      // Fetch inicial
       fetchInstagramPosts();
+      
+      // Atualizar feed a cada 5 minutos para posts em tempo real
+      const interval = setInterval(fetchInstagramPosts, 5 * 60 * 1000);
+      
+      return () => clearInterval(interval);
     } else {
       setPosts([]);
       setIsLoading(false);

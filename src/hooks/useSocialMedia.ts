@@ -11,17 +11,7 @@ export interface SocialMedia {
   isActive: boolean;
 }
 
-const DEFAULT_SOCIAL_MEDIA: SocialMedia[] = [
-  {
-    id: '1',
-    platform: 'Instagram',
-    handle: '@vizualizaoficial',
-    url: 'https://instagram.com/vizualizaoficial',
-    icon: 'instagram',
-    color: 'from-purple-600 to-pink-600',
-    isActive: true
-  }
-];
+const DEFAULT_SOCIAL_MEDIA: SocialMedia[] = [];
 
 export const useSocialMedia = () => {
   const [socialMedias, setSocialMedias] = useState<SocialMedia[]>([]);
